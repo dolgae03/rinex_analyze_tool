@@ -1,0 +1,3 @@
+rinex file : data interval 5 sec
+
+rinex file 2020년 3월 1일 부터 다운로드
