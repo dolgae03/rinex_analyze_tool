@@ -97,10 +97,14 @@ for i = commonPrn
     % plot(t, -chipsetRx.ph1(:,i)+mean(chipsetRx.ph1(:,i), 'omitnan'), '-', 'Color', colors(kk, :));
     % xlabel('Time (sec)')
     % ylabel('Pseudorange (m)')
+    new_chipset = chipsetRx.ph1(:, i);
+
+    % 조건을 만족하는 인덱스에 NaN 할당
+    new_chipset(abs(new_chipset) < 10) = NaN;
 
 
     % title('Carrier Difference')
-    errors = (-chipsetRx.ph1(:,i)+mean(chipsetRx.ph1(:,i), 'omitnan')) - (convenRx.ph1(:,i)-mean(convenRx.ph1(:,i), 'omitnan'));
+    errors = (-new_chipset+mean(chipsetRx.ph1(:,i), 'omitnan')) - (convenRx.ph1(:,i)-mean(convenRx.ph1(:,i), 'omitnan'));
     plot(t/3600, errors, 'Color', colors(kk, :), 'LineWidth', 1);
     
     hold on;
@@ -296,6 +300,8 @@ hold on;
 xlim([6, 9]);
 ylim([-40, 40]);
 
+
+
 % title('Multipath after Noise Removal', 'FontSize', 14, 'FontWeight', 'bold');
 xlabel('Time (hours)', 'FontSize', 14, 'FontWeight', 'bold');
 ylabel('Multipath Noise (m)', 'FontSize', 14, 'FontWeight', 'bold');
@@ -337,6 +343,8 @@ sdtemp = chipsetRx.mp1SD(:);
 sdtemp(isnan(sdtemp)) = [];
 ddtemp = chipsetRx.mp1DD(:);
 ddtemp(isnan(ddtemp)) = [];
+
+
 
 fig = figure(fig_constant + 9);
 clf;

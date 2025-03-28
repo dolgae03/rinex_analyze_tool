@@ -13,8 +13,6 @@ function [azimuth, elevation] = calculateElevationAzimuth(observerECEF, targetEC
     n = enuVector(2); % North component
     u = enuVector(3); % Up component
     
-    
-    
     % Calculate elevation angle (in degrees)
     elevation = asind(u / sqrt(e^2 + n^2 + u^2));
     

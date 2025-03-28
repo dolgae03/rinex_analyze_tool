@@ -20,15 +20,15 @@ function plot_doppler_by_snr(dataset, start, duration, save_dir)
         range = dataset.constellation_idx(target_idx_list(k)):dataset.constellation_idx(target_idx_list(k)+1)-1;
 
         
-        target_dop = dataset.dop1(start:start+duration, range) / frequencies(k) * c;
+        target_dop = dataset.dop1(start:start+duration, range);
         target_pr = dataset.pr1(start:start+duration, range);
         target_snr = dataset.snr1(start:start+duration, range);
 
         target_pr_change = -diff(target_pr, 1, 1); % Pseudorange 변화율
-        target_dop = target_dop(1:end-1, :); % Doppler 데이터 크기 맞춤
-
-        diff_velocity_pseudorange = target_dop - target_pr_change; % 각 데이터 포인트별 차이 계산
-
+        target_dop_avg = - (target_dop(1:end-1, :) + target_dop(2:end, :)) / 2;
+    
+        % 두 값의 차이를 계산
+        diff_velocity_pseudorange = target_dop_avg - target_pr_change;
         scatter(target_snr(2:end, :), abs(diff_velocity_pseudorange), 10, 'filled');
         hold on;
     end

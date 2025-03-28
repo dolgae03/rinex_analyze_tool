@@ -18,11 +18,11 @@ function plot_doppler_by_time(dataset, start, duration, save_dir)
         range = dataset.constellation_idx(target_idx_list(k)):dataset.constellation_idx(target_idx_list(k)+1)-1;
 
         
-        target_dop = dataset.dop1(start:start+duration, range) / frequencies(k) * c;
+        target_dop = dataset.dop1(start:start+duration, range);
         target_pr = dataset.pr1(start:start+duration, range);
 
         target_pr_change = -diff(target_pr, 1, 1); % Pseudorange 변화율
-        target_dop = target_dop(1:end-1, :); % Doppler 데이터 크기 맞춤
+        target_dop = -target_dop(1:end-1, :); % Doppler 데이터 크기 맞춤
 
         diff_velocity_pseudorange = target_dop - target_pr_change; % 각 데이터 포인트별 차이 계산
     
