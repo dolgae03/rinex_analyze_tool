@@ -19,6 +19,7 @@ function plot_snr_time(dataset, start, duration, save_dir)
     
     xyz_const = wgslla2xyz(37.566535, 127.0277194, 38);
 
+
    
     %% Plot 수행
     for i=1:length(target_idx_list)
@@ -27,14 +28,20 @@ function plot_snr_time(dataset, start, duration, save_dir)
         clf;
         fig.Color = 'white';
     
+        colors = lines();  % 최대 64개 고유 색상 미리 생성 (PRN이 1~64 범위라고 가정)
         % Plot SNR over time for the current satellite
-        plot(time./3600, snr_per_each_sat{i}, ...
-             'LineWidth', 1);
+        hold on;
+        for j = 1:size(snr_per_each_sat{i}, 1)
+            plot(time./3600, snr_per_each_sat{i}(j,:), ...
+             'LineWidth', 1, ...
+             'Color', colors(j,:));
+        end
+        hold off;
         
         xlabel('Time (hours)', 'FontSize', 14, 'FontWeight', 'bold');
         ylabel('C/N0 (dB-Hz)', 'FontSize', 14, 'FontWeight', 'bold');
         set(gca, 'FontSize', 14); % 축 글꼴 크기 및 두께 설정
-        xlim([0, 21]);
+        xlim([0, max(time./3600)]);
         ylim([10, 60]);
         % title(['SNR over Time for Satellite ', sat_names{i}]);
         grid on;
@@ -86,7 +93,7 @@ function plot_snr_time(dataset, start, duration, save_dir)
         xlabel('Time (hours)', 'FontSize', 14, 'FontWeight', 'bold');
         ylabel('C/N0 (dB-Hz)', 'FontSize', 14, 'FontWeight', 'bold');
         set(gca, 'FontSize', 14); % 축 글꼴 크기 및 두께 설정
-        xlim([0, 21]);
+        xlim([0, max(time./3600)]);
         ylim([10, 60]);
         % title(['SNR over Time for Satellite ', sat_names{i}]);
         grid on;

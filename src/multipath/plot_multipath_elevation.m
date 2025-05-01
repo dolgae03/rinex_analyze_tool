@@ -1,14 +1,16 @@
-function plot_multipath_elevation(dataset, start, duration, save_dir)
+function plot_multipath_elevation(dataset, start, duration, save_dir, frequency)
     %% 모든 시간대에 대한 가시 위성수 생성
     xyz_const = wgslla2xyz(37.566535, 127.0277194, 38);
 
     %% Constellation 별 가시 위성수 생성
-    target_idx_list = find([1,0,0,0,0] == 1);
-    sat_names = dataset.constellation_name(target_idx_list);
-
-    target_val = dataset.mp;
+    target_idx_list = find([1,0,1,0,1] == 1);
+    
+    if frequency == 1
+        target_val = dataset.mp1;
+    elseif frequency == 5
+        target_val = dataset.mp5;
+    end
    
-    target_idx_list = find([1,0,0,0,0] == 1);
     sat_names = dataset.constellation_name(target_idx_list);
 
     plot_snr = cell(length(target_idx_list), 200);         % 3 elevation bins
@@ -58,13 +60,10 @@ function plot_multipath_elevation(dataset, start, duration, save_dir)
         ylim([0, y_lim + 1]);
         % title(['Multipath over Elevation : ', sat_names{i}]);
         grid on;
-
-        save_path = fullfile(save_dir, ['plot_multipath_elevation_', sat_names{i}, '.fig']);
-        savefig(fig, save_path);
-
-        save_path = fullfile(save_dir, ['plot_multipath_elevation_', sat_names{i}, '.png']);
-        saveas(fig, save_path);
-        % Add legend with LaTeX interpreter
-        % legend(dataset.constellation_name{i}, 'Location', 'northwest', 'Interpreter', 'latex');
+       
+        file_base = sprintf('plot_multipath_elevation_%s_%d', sat_names{i}, frequency);
+        
+        savefig(fig, fullfile(save_dir, [file_base, '.fig']));
+        saveas(fig, fullfile(save_dir, [file_base, '.png']));
     end
 end

@@ -1,6 +1,6 @@
 function plot_doppler_by_snr(dataset, start, duration, save_dir)
     %%% Define frequencies for each constellation
-    target_idx_list = find([1,0,0,0,0] == 1);
+    target_idx_list = find([1,0,1,0,1] == 1);
     frequencies = [1575.42e6, 1575.42e6, 1561.098e6]; % Example for GPS L1, GLONASS L1, Galileo E1
 
     %% Doppler와 Pseudorange 데이터 추출

@@ -50,7 +50,7 @@ function plot_visable_sat_num(dataset, start, duration, save_dir)
     xlabel('Time (hours)', 'FontSize', 14, 'FontWeight', 'bold'); % X축 라벨 글꼴 크기 및 두께 설정
     ylabel('# of Satellite', 'FontSize', 14, 'FontWeight', 'bold'); % Y축 라벨 글꼴 크기 및 두께 설정
 
-    xlim([0, 21]);
+    xlim([0, max(time./3600)]);
     ylim([0, 24]);
     grid on;
 

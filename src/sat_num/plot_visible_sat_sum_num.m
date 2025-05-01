@@ -61,7 +61,7 @@ function plot_visable_sat_sum_num(dataset, start, duration, save_dir)
     ylabel('Cumulative # of Satellites', 'FontSize', 14, 'FontWeight', 'bold');
 
     % 축 한계 및 눈금 설정
-    xlim([0, 21]);
+    xlim([0, max(time./3600)]);
     ylim([0, 42]);
     yticks(0:3:42);
     set(gca, 'FontSize', 14);

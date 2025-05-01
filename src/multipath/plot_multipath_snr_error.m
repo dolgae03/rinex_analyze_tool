@@ -1,19 +1,25 @@
-function plot_multipath_snr_error(dataset, start, duration, save_dir)
+function plot_multipath_snr_error(dataset, start, duration, save_dir, frequency)
     %% 모든 시간대에 대한 가시 위성수 생성
     target_val = dataset.snr1; % SNR 데이터
     time = dataset.time(start:start+duration); % 시간 데이터
 
     %% Constellation 별 가시 위성수 생성
-    target_idx_list = find([1, 0, 0, 0, 0] == 1); % 활성화된 별자리 인덱스
+    target_idx_list = find([1,0,1,0,1] == 1);
     sat_names = dataset.constellation_name(target_idx_list); % 위성 이름
 
     target_multipath = {};
     snr_per_each_sat = {};
+
+    if frequency == 1
+        target_val_mp = dataset.mp1;
+    elseif frequency == 5
+        target_val_mp = dataset.mp5;
+    end
     
     for i = 1:length(target_idx_list)
         range = dataset.constellation_idx(target_idx_list(i)):dataset.constellation_idx(target_idx_list(i)+1)-1;
         snr_per_each_sat{i} = target_val(start:start+duration, range)'; % SNR 데이터
-        target_multipath{i} = dataset.mp(start:start+duration, range)'; % Multipath 데이터
+        target_multipath{i} = target_val_mp(start:start+duration, range)'; % Multipath 데이터
     end
 
     %% Reference 위치 추정
@@ -70,15 +76,18 @@ function plot_multipath_snr_error(dataset, start, duration, save_dir)
         ylabel('Multipath Noise (m)', 'FontSize', 14, 'FontWeight', 'bold');
         set(gca, 'FontSize', 14); % 축 글꼴 크기 및 두께 설정
         xlim([25, 60]);
-        ylim([0, max(bin_means + bin_std, [], 'omitnan') + 0.5]);
+        upper_limit = max(bin_means + bin_std, [], 'omitnan');
+        if ~isnan(upper_limit)
+            ylim([0, upper_limit + 0.5]);
+        else
+            ylim([0, 1]); % fallback value (or skip ylim 설정)
+        end
         % title(['Multipath over SNR : ', sat_names{i}]);
         grid on;
 
-        % Save the figure
-        save_path = fullfile(save_dir, ['plot_multipath_snr_error_', sat_names{i}, '.fig']);
-        savefig(fig, save_path);
-    
-        save_path = fullfile(save_dir, ['plot_multipath_snr_error_', sat_names{i}, '.png']);
-        saveas(fig, save_path);
+        file_base = sprintf('plot_multipath_snr_error_%s_%d', sat_names{i}, frequency);
+        
+        savefig(fig, fullfile(save_dir, [file_base, '.fig']));
+        saveas(fig, fullfile(save_dir, [file_base, '.png']));
     end
 end

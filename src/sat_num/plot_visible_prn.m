@@ -57,7 +57,7 @@ function plot_visible_prn(dataset, start, duration, save_dir)
         ylabel('PRN', 'FontSize', 14, 'FontWeight', 'bold');
 
         % 축 한계 및 눈금 설정
-        xlim([0,21]);
+        xlim([0, max(time./3600)]);
         ylim([0, max_prn_num(idx)]);
         yticks(0:4:max_prn_num(idx));
         set(gca, 'FontSize', 14);
