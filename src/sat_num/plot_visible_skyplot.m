@@ -77,7 +77,7 @@ function plot_visible_skyplot(dataset, start, duration, save_dir)
         fig.Color = 'white';
         clf;
     
-        p = polarscatter(deg2rad(all_azimuth{idx}), ...
+        p = polarscatter(deg2rad(all_azimuth{idx} + 90), ...
                          90 - all_elevation{idx}, ...
                          20, 'filled');
         
@@ -87,22 +87,27 @@ function plot_visible_skyplot(dataset, start, duration, save_dir)
         p.MarkerFaceAlpha = 0.7;
         p.MarkerEdgeAlpha = 0.8;
         
-        % 반지름(고도) 설정
-        rlim([0, 90]);
-        rticks([0, 30, 60, 90]);
-        rticklabels({'90', '60', '30', '0'});
-        
-        % 방위각(azimuth) 레이블
-        thetaticks(0:30:330);
-        thetaticklabels({'E', '30', '60', ...
-                         'N', '120', '150', ...
-                         'W', '210', '240', ...
-                         'S', '300', '330'});
+        rlim([0, 90]);  % 거리(r)의 범위 설정
+        rticks([0, 30, 60, 90]);  % 원하는 위치에 레이블 추가
+        rticklabels({'90', '60', '30', '0'});  % 반전된 레이블 설정
+    
+        % 각도 범위 설정 및 타이틀 추가
+        thetalim([0, 360]);  % 각도(θ)의 범위 설정
+    
+        % 각도 설정
+        thetalim([0, 360]);  % 각도(θ)의 범위 설정
+        thetaticklabels({'E', '300', '330', ...
+                         'N','30', '60', ...
+                         'W', '120', '150', ...
+                         'S', '210', '240'});  % 각도를 N, E, S, W로 표시
+
+        set(gca, 'FontSize', 14);
+    
         
         % 재관측 지점 강조
         if ~isempty(close_azimuth{idx})
             hold on;
-            polarscatter(deg2rad(close_azimuth{idx}), ...
+            polarscatter(deg2rad(close_azimuth{idx} + 90), ...
                          90 - close_elevation{idx}, ...
                          40, 'x', 'LineWidth', 1.8, 'MarkerEdgeColor', 'k');
         end
