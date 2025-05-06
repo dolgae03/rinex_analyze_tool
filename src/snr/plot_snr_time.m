@@ -24,7 +24,7 @@ function plot_snr_time(dataset, start, duration, save_dir)
     %% Plot 수행
     for i=1:length(target_idx_list)
         % Create a new figure for each satellite
-        fig = figure(i+35);
+        fig = figure(i+3738751);
         clf;
         fig.Color = 'white';
     
@@ -46,10 +46,10 @@ function plot_snr_time(dataset, start, duration, save_dir)
         % title(['SNR over Time for Satellite ', sat_names{i}]);
         grid on;
 
-        save_path = fullfile(save_dir, ['plot_snr_time_', sat_names{i}, '.fig']);
+        save_path = fullfile(save_dir, ['plot_snr_time_L1_', sat_names{i}, '.fig']);
         savefig(fig, save_path);
 
-        save_path = fullfile(save_dir, ['plot_snr_time_', sat_names{i}, '.png']);
+        save_path = fullfile(save_dir, ['plot_snr_time_L1_', sat_names{i}, '.png']);
         saveas(fig, save_path);
         % Add legend with LaTeX interpreter
         % legend(dataset.constellation_name{i}, 'Location', 'northwest', 'Interpreter', 'latex');
@@ -82,7 +82,7 @@ function plot_snr_time(dataset, start, duration, save_dir)
     %% Plot 수행
     for i=1:length(target_idx_list)
         % Create a new figure for each satellite
-        fig = figure(i+35);
+        fig = figure(i+99134);
         clf;
         fig.Color = 'white';
     

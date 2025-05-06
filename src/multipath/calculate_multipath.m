@@ -27,10 +27,31 @@ function dataset = calculate_multipath(dataset)
     % Detrend per column
     pr1_diff = window_detrend_poly3(pr1_diff, window_size);
     pr5_diff = window_detrend_poly3(pr5_diff, window_size);
-
-    % Final mean removal along time axis (axis=1)
-    pr1_diff = pr1_diff - mean(pr1_diff, 1, 'omitnan');
-    pr5_diff = pr5_diff - mean(pr5_diff, 1, 'omitnan');
+    
+    % 전체 조건을 만족하는 위치 찾기
+    [rowIdx_all, colIdx_all] = find(~isnan(dataset.pr1));
+    
+    % 열 인덱스가 32 이하인 것만 필터링
+    mask = colIdx_all <= 32;
+    rowIdx = rowIdx_all(mask);
+    colIdx = colIdx_all(mask);
+    
+    % 데이터 추출
+    % idx_linear = sub2ind(size(dataset.snr1), rowIdx, colIdx);  % 2D 인덱스를 1D로 변환
+    % 
+    % snr_values     = dataset.snr1(idx_linear);
+    % pr_values      = dataset.pr1(idx_linear);
+    % carrier_values = dataset.ph1(idx_linear);
+    % diff_value     = pr1_diff(idx_linear);
+    % 
+    % % 테이블 생성
+    % result_table = table(rowIdx, colIdx, snr_values, pr_values, carrier_values, diff_value, ...
+    %     'VariableNames', {'RowIdx', 'ColIdx', 'SNR', 'PR', 'Carrier', 'Value'});
+    % 
+    % disp(result_table);
+    
+    mean(mean(abs(pr1_diff), 'omitnan'), 'omitnan')
+    mean(mean(abs(pr5_diff), 'omitnan'), 'omitnan')
 
     % Save results
     dataset.mp1 = pr1_diff;
