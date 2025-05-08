@@ -15,7 +15,7 @@ addpath('./navutils');
 
 
 % Define the paths
-obs_folder = '.\data\obs_test';
+obs_folder = '.\data\obs_real';
 result_folder = '.\data\result';
 
 % Get list of .mat files in obs_folder
@@ -37,11 +37,13 @@ for i = 1:length(files)
     
     % Load the dataset object from the .mat file
     dataset = load(file_path);
-    dataset = calculate_multipath(dataset);
     dataset = preprocess_dataset(dataset, [[103, 121], [151, 180]]);
+    dataset = calculate_multipath_other(dataset);
     
     % Remove the .mat extension and create a specific result folder for this file
     % [~, name, ~] = fileparts(files(i).name);
+
+
     % specific_result_folder = fullfile(result_folder, name);
     
     % Create the specific result folder if it doesn't exist
@@ -50,13 +52,13 @@ for i = 1:length(files)
     end
     
     start = 10;
-    duration = size(dataset.pr1, 1) - 60;
+    duration = 3500*3;
     %% plot carrier
     snr_folder = fullfile(specific_result_folder, 'carrier');
     if ~exist(snr_folder, 'dir')
         mkdir(snr_folder);
     end
-    
+
     for target_frequency = [1, 5]
         plot_carrier_diff(dataset, start, duration, snr_folder, target_frequency);
         plot_cycle_slip(dataset, start, duration, snr_folder, target_frequency);

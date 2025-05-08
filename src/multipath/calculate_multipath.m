@@ -25,8 +25,8 @@ function dataset = calculate_multipath(dataset)
     window_size = round(window_time / sample_interval); % samples per window
 
     % Detrend per column
-    pr1_diff = window_detrend_poly3(pr1_diff, window_size);
-    pr5_diff = window_detrend_poly3(pr5_diff, window_size);
+    pr1_diff = window_detrend_poly2(pr1_diff, window_size);
+    pr5_diff = window_detrend_poly2(pr5_diff, window_size);
     
     % 전체 조건을 만족하는 위치 찾기
     [rowIdx_all, colIdx_all] = find(~isnan(dataset.pr1));
@@ -51,7 +51,6 @@ function dataset = calculate_multipath(dataset)
     % disp(result_table);
     
     mean(mean(abs(pr1_diff), 'omitnan'), 'omitnan')
-    mean(mean(abs(pr5_diff), 'omitnan'), 'omitnan')
 
     % Save results
     dataset.mp1 = pr1_diff;

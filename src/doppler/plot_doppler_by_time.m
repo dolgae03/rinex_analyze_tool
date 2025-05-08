@@ -21,7 +21,7 @@ function plot_doppler_by_time(dataset, start, duration, save_dir)
         target_dop = dataset.dop1(start:start+duration, range) / frequencies(k) * c;
         target_pr = dataset.pr1(start:start+duration, range);
 
-        target_pr_change = -diff(target_pr, 1, 1); % Pseudorange 변화율
+        target_pr_change = diff(target_pr, 1, 1); % Pseudorange 변화율
         target_dop = target_dop(1:end-1, :); % Doppler 데이터 크기 맞춤
 
         diff_velocity_pseudorange = target_dop - target_pr_change; % 각 데이터 포인트별 차이 계산
@@ -35,9 +35,9 @@ function plot_doppler_by_time(dataset, start, duration, save_dir)
 
     xlim([0, max(time./3600)]);
 
-    if any(any(abs(diff_velocity_pseudorange) > 5000))
-        ylim([0,2000])
-    end
+    % if any(any(abs(diff_velocity_pseudorange) > 5000))
+    %     ylim([0,2000])
+    % end
     xlabel('Time (hours)', 'FontSize', 14, 'FontWeight', 'bold');
     % ylabel('$|\rho_o - \dot{\rho}_o \cdot \Delta t|$ (m)', 'Interpreter', 'latex', 'FontSize', 14, 'FontWeight', 'bold');
 

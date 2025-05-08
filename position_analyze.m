@@ -1,10 +1,11 @@
 % 기준점 (deg, deg, m)
-reflat = 36.372330;
-reflon = 127.358702;
-refalt = 88.599;
+reflat = 36.37227643;
+reflon = 127.3587011;
+refalt = 88.5383;
+
 
 % CSV 읽기
-data = readtable('./data/pos/smartphone_opensky_2025_04_29.csv');
+data = readtable('./data/pos/GEOP126A.csv');
 
 % 데이터 크기
 N = height(data);
@@ -20,7 +21,7 @@ for i = 1:N
 end
 
 % East 방향으로 1m 이동 (서쪽으로)
-enu(:,1) = enu(:,1) - 2.5;
+enu(:,1) = enu(:,1) - 3;
 
 % 3D 궤적 플롯
 figure(1);
