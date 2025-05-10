@@ -7,7 +7,8 @@ else
     arc_num = size(acrrow,1);
 end
 
-Multipath_Code =  zeros(size(t,1),1);
+% Multipath_Code =  zeros(size(t,1),1);
+Multipath_Code =  nan(size(t,1),1);
 
 for arc=1:arc_num
     if arc_num==1 || arc==arc_num

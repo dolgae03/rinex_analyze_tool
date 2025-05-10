@@ -6,15 +6,16 @@ function plot_snr_elevation_constellation(dataset, start, duration, save_dir)
     elevation_angles = [];
     snr_values = [];
 
-    colors = lines(5);
-    colors = colors([1, 2, 5, 3, 5], :);
+    global color_palette
+    colors = color_palette;
 
     %% 모든 시간대에 대한 가시 위성수 생성
     target_val = dataset.snr1;
     plot_elevation = {};
     plot_snr = {};
 
-    target_idx_list = find([1,0,1,0,1] == 1);
+%     target_idx_list = find([1,0,1,0,1] == 1);
+    target_idx_list = find([1,0,0,0,0] == 1);
     sat_names = dataset.constellation_name(target_idx_list);
 
     for k=1:length(target_idx_list)
@@ -45,6 +46,7 @@ function plot_snr_elevation_constellation(dataset, start, duration, save_dir)
         fig = figure(573 + idx);
         clf;
         fig.Color = 'white';
+        set(gcf,'Position', [100 300 600 400]);  % [left bottom width height]
         hold on;
 
         % 그래프 레이블 및 범례 설정
@@ -55,7 +57,7 @@ function plot_snr_elevation_constellation(dataset, start, duration, save_dir)
         xlim([0, 90]);
     
         % 축과 라벨의 글꼴 크기 및 두께 설정
-        set(gca, 'FontSize', 14);  % 축 글꼴 크기 및 두께 설정
+        set(gca, 'FontSize', 19);  % 축 글꼴 크기 및 두께 설정
 
         grid on;
 
@@ -80,8 +82,6 @@ function plot_snr_elevation_constellation(dataset, start, duration, save_dir)
     elevation_angles = [];
     snr_values = [];
 
-    colors = lines(5);
-    colors = colors([1, 2, 5, 3, 5], :);
 
     %% 모든 시간대에 대한 가시 위성수 생성
     target_val = dataset.snr3;
@@ -119,6 +119,7 @@ function plot_snr_elevation_constellation(dataset, start, duration, save_dir)
         fig = figure(573 + idx);
         clf;
         fig.Color = 'white';
+        set(gcf,'Position', [100 300 600 400]);  % [left bottom width height]
         hold on;
 
         % 그래프 레이블 및 범례 설정
@@ -129,7 +130,7 @@ function plot_snr_elevation_constellation(dataset, start, duration, save_dir)
         xlim([0,90]);
     
         % 축과 라벨의 글꼴 크기 및 두께 설정
-        set(gca, 'FontSize', 14);  % 축 글꼴 크기 및 두께 설정
+        set(gca, 'FontSize', 17);  % 축 글꼴 크기 및 두께 설정
 
         grid on;
 

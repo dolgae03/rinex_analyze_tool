@@ -1,5 +1,6 @@
 
 function plot_snr_elevation_skyplot(dataset, start, duration, save_dir)
+global color_palette
     %% Reference 위치 추정 
     % calculation_idx = find(~isnan(dataset.pr3(start, :)));
     % l5_signal = dataset.pr3(start, calculation_idx)';
@@ -14,7 +15,8 @@ function plot_snr_elevation_skyplot(dataset, start, duration, save_dir)
 
     target_val = dataset.snr1;
 
-    target_idx_list = find([1,0,1,0,1] == 1);
+%     target_idx_list = find([1,0,1,0,1] == 1);
+      target_idx_list = find([1,0,0,0,0] == 1);
     sat_names = dataset.constellation_name(target_idx_list);
     
     for k = 1:length(target_idx_list)
@@ -52,9 +54,9 @@ function plot_snr_elevation_skyplot(dataset, start, duration, save_dir)
         
         % 컬러맵 및 색상 설정
         colormap(jet);
-        caxis([30, 56]);  % C/N0 값의 범위 설정
+        caxis([20, 55]);  % C/N0 값의 범위 설정
         scatter_colors = values;  
-        polarscatter(angles, radii, 100, scatter_colors, 'filled');
+        polarscatter(angles, radii, 120, scatter_colors, 'filled');
         
         % 색상 바 추가
         colorbar;
@@ -141,9 +143,9 @@ function plot_snr_elevation_skyplot(dataset, start, duration, save_dir)
         
         % 컬러맵 및 색상 설정
         colormap(jet);
-        caxis([30, 56]);  % C/N0 값의 범위 설정
+        caxis([20 55]);  % C/N0 값의 범위 설정
         scatter_colors = values;  
-        polarscatter(angles, radii, 100, scatter_colors, 'filled');
+        polarscatter(angles, radii, 120, scatter_colors, 'filled');
         
         % 색상 바 추가
         colorbar;

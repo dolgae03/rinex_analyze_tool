@@ -1,7 +1,10 @@
-function plot_doppler_by_time(dataset, start, duration, save_dir)
+function plot_doppler_by_time(dataset, start, duration, save_dir, rcv_type)
     %%% Define frequencies for each constellation
     target_idx_list = find([1,0,1,0,1] == 1);
     frequencies = [1575.42e6, 1575.42e6, 1561.098e6]; % Example for GPS L1, GLONASS L1, Galileo E1
+
+    RCV_TYPE_SMARTPHONE = 0;
+    RCV_TYPE_RECEIVER = 1;
 
     %% Doppler와 Pseudorange 데이터 추출
     time = dataset.time(start:start + duration);
@@ -22,6 +25,9 @@ function plot_doppler_by_time(dataset, start, duration, save_dir)
         target_pr = dataset.pr1(start:start+duration, range);
 
         target_pr_change = diff(target_pr, 1, 1); % Pseudorange 변화율
+        if (rcv_type == RCV_TYPE_RECEIVER) % 상용 수신기
+            target_dop = -target_dop;
+        end
         target_dop = target_dop(1:end-1, :); % Doppler 데이터 크기 맞춤
 
         diff_velocity_pseudorange = target_dop - target_pr_change; % 각 데이터 포인트별 차이 계산

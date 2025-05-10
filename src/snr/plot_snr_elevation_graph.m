@@ -1,14 +1,15 @@
 function plot_snr_elevation_graph(dataset, start, duration, save_dir)
     %% Reference 위치 추정 
     xyz_const = wgslla2xyz(37.566535, 127.0277194, 38);
-
-    colors = lines(5);
-    colors = colors([1, 2, 5, 3, 5], :);
+    global color_palette
+    colors = color_palette;
 
     %% 모든 시간대에 대한 가시 위성수 생성
     target_val = dataset.snr1;
    
-    target_idx_list = find([1,0,1,0,1] == 1);
+%     target_idx_list = find([1,0,1,0,1] == 1);
+    target_idx_list = find([1,0,0,0,0] == 1);
+
     sat_names = dataset.constellation_name(target_idx_list);
 
     plot_snr = cell(length(target_idx_list), 3);         % 3 elevation bins
@@ -16,7 +17,12 @@ function plot_snr_elevation_graph(dataset, start, duration, save_dir)
 
 
     for k=1:length(target_idx_list)
-        for j=dataset.constellation_idx(target_idx_list(k)):dataset.constellation_idx(target_idx_list(k)+1)-1
+         sv_list = dataset.constellation_idx(target_idx_list(k)):dataset.constellation_idx(target_idx_list(k)+1)-1;
+        mean_snr = mean(target_val(:,sv_list),'all', 'omitnan')
+        std_snr = std(target_val(:,sv_list), 0, 'all', 'omitnan')
+       
+        for j=sv_list
+
             for i = start:start+duration
                 sv_pos = squeeze(dataset.XS_tot1(i, j, :));
                 if isnan(target_val(i, j)) || any(isnan(sv_pos))
@@ -40,11 +46,12 @@ function plot_snr_elevation_graph(dataset, start, duration, save_dir)
     end
 
     %% Histogram Plotting (SNR vs. Number of Datapoint)
-    bin_edges = 32:1:56; % Bins from 32 to 56 with intervals of 4
+    bin_edges = 20:1:55; % Bins from 32 to 56 with intervals of 4
 
     for idx = 1:length(target_idx_list)
         for check_idx = 1:3
             fig = figure(583 + idx*10 + check_idx);
+            set(gcf,'Position', [100 300 600 400]);  % [left bottom width height]
             clf;
             fig.Color = 'white';
             hold on;
@@ -54,16 +61,21 @@ function plot_snr_elevation_graph(dataset, start, duration, save_dir)
             if isempty(snr_data)
                 continue;
             end
+            mean_snr = mean(snr_data); 
+            std_snr = std(snr_data);
+            str_snr = sprintf("mean: %.2f\nSTD  :%.2f", mean_snr, std_snr );
 
             % Plot histogram
-            histogram(snr_data, bin_edges, 'Normalization','probability', 'FaceColor', colors(idx, :));
+            histogram(snr_data, bin_edges, 'Normalization','probability', ...
+                'FaceColor', colors(idx, :), 'DisplayName', str_snr);
 
             % Labels and title
             xlabel('C/N0 (dB-Hz)', 'FontSize', 14, 'FontWeight', 'bold');
             ylabel('Probability', 'FontSize', 14, 'FontWeight', 'bold');
             % title(['Histogram of SNR for ', sat_names{idx}, ' (Elevation bin ', num2str(check_idx), ')']);
-            xlim([32, 56]);
-            ylim([0, 0.3])
+            xlim([min(bin_edges) max(bin_edges)]);
+            ylim([0, 0.18])
+            legend('Location', 'northwest');
 
             % Set font size
             set(gca, 'FontSize', 14);
@@ -86,10 +98,6 @@ function plot_snr_elevation_graph(dataset, start, duration, save_dir)
 
         %% Reference 위치 추정 
     xyz_const = wgslla2xyz(37.566535, 127.0277194, 38);
-
-    colors = lines(5);
-    colors = colors([1, 2, 5, 3, 5], :);
-
     %% 모든 시간대에 대한 가시 위성수 생성
     target_val = dataset.snr3;
    
@@ -101,7 +109,11 @@ function plot_snr_elevation_graph(dataset, start, duration, save_dir)
 
 
     for k=1:length(target_idx_list)
-        for j=dataset.constellation_idx(target_idx_list(k)):dataset.constellation_idx(target_idx_list(k)+1)-1
+        sv_list = dataset.constellation_idx(target_idx_list(k)):dataset.constellation_idx(target_idx_list(k)+1)-1;
+        mean_snr = mean(target_val(:,sv_list),'all', 'omitnan');
+        std_snr = std(target_val(:,sv_list), 0, 'all', 'omitnan');
+       
+        for j=sv_list
             for i = start:start+duration
                 sv_pos = squeeze(dataset.XS_tot1(i, j, :));
                 if isnan(target_val(i, j)) || any(isnan(sv_pos))
@@ -125,11 +137,12 @@ function plot_snr_elevation_graph(dataset, start, duration, save_dir)
     end
 
     %% Histogram Plotting (SNR vs. Number of Datapoint)
-    bin_edges = 32:1:56; % Bins from 32 to 56 with intervals of 4
 
     for idx = 1:length(target_idx_list)
         for check_idx = 1:3
             fig = figure(583 + idx*10 + check_idx);
+            set(gcf,'Position', [100 300 600 400]);  % [left bottom width height]
+
             clf;
             fig.Color = 'white';
             hold on;
@@ -139,19 +152,24 @@ function plot_snr_elevation_graph(dataset, start, duration, save_dir)
             if isempty(snr_data)
                 continue;
             end
+            mean_snr = mean(snr_data); 
+            std_snr = std(snr_data);
+            str_snr = sprintf("mean: %.2f\nSTD:  %.2f", mean_snr, std_snr );
 
             % Plot histogram
-            histogram(snr_data, bin_edges, 'Normalization','probability', 'FaceColor', colors(idx, :));
+            histogram(snr_data, bin_edges, 'Normalization','probability', ...
+                'FaceColor', colors(idx, :), 'DisplayName', str_snr);
 
             % Labels and title
             xlabel('C/N0 (dB-Hz)', 'FontSize', 14, 'FontWeight', 'bold');
             ylabel('Probability', 'FontSize', 14, 'FontWeight', 'bold');
             % title(['Histogram of SNR for ', sat_names{idx}, ' (Elevation bin ', num2str(check_idx), ')']);
-            xlim([32, 56]);
-            ylim([0, 0.3])
+            xlim([min(bin_edges) max(bin_edges)]);
+            ylim([0, 0.18])
+            legend('Location','northwest');
 
             % Set font size
-            set(gca, 'FontSize', 14);
+            set(gca, 'FontSize', 19);
 
             grid on;
 

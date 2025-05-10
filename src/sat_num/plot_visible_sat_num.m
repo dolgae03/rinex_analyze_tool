@@ -1,66 +1,123 @@
-function plot_visable_sat_num(dataset, start, duration, save_dir)
-    %% Constellation 별 가시 위성수 생성
+function plot_visible_skyplot(dataset, start, duration, save_dir)
+    %% 기준 수신기 위치 설정 (사용자의 실제 좌표 사용)
+    xyz_const = wgslla2xyz(37.566535, 127.0277194, 38);  % 필요한 경우 실제 좌표로 변경
+
+    %% 변수 초기화
+    % 대상 별자리 인덱스 설정 (예: [1, 3, 5])
     target_idx_list = find([1, 0, 1, 0, 1] == 1);
-    visable_sat_mat = {};
-
-    for i = 1:length(target_idx_list)
-        range = dataset.constellation_idx(target_idx_list(i)):dataset.constellation_idx(target_idx_list(i)+1) - 1;
-        visable_sat_mat{i} = sum(~isnan(dataset.pr1(start:start + duration, range)), 2)';
-    end
-
+    sat_names = dataset.constellation_name(target_idx_list);
     time = dataset.time(start:start + duration);
 
-    %% 그림 그리기 
-    fig = figure(6); 
-    clf;
-    fig.Color = "white";
+    % 방위각과 고도각 데이터를 저장할 배열 초기화
+    all_azimuth = {};
+    all_elevation = {};
 
-    fig.Name = save_dir;  % Set the figure window title to save_dir
-    fig.NumberTitle = 'off';  % Turn off the default figure numbering
-    hold on;
+    close_azimuth = {};
+    close_elevation = {};
 
+    %% 각 별자리의 위성에 대한 방위각과 고도각 계산
+    for idx = 1:length(target_idx_list)
+        k = target_idx_list(idx);
+        elevation_angles = [];
+        azimuth_angles = [];
+
+        c_ele_angle = [];
+        c_azi_angle = [];
+
+        for j = dataset.constellation_idx(k):dataset.constellation_idx(k + 1) - 1
+            is_close = false;
+            is_first = true;
+
+            for i = 1:length(time)
+                sv_pos = squeeze(dataset.XS_tot1(start + i - 1, j, :));
+                if any(isnan(sv_pos))
+                    if ~isempty(elevation_angles) && ~is_first
+                        c_ele_angle = [c_ele_angle; elevation_angles(end, :)];
+                        c_azi_angle = [c_azi_angle; azimuth_angles(end, :)];
+                        is_close = true;
+                    end
+                    continue;
+                end
+                [azimuth, elevation] = calculateElevationAzimuth(xyz_const, sv_pos);
+
+                if elevation < 0
+                    continue;
+                end
+
+                % 방위각과 고도각 저장
+                elevation_angles = [elevation_angles; elevation];
+                azimuth_angles = [azimuth_angles; azimuth];
+                is_first = false;
+                
+                if is_close
+                    c_ele_angle = [c_ele_angle; elevation_angles(end, :)];
+                    c_azi_angle = [c_azi_angle; azimuth_angles(end, :)];
+                    is_close = false;
+                end
+            end
+        end
+
+        % 모든 데이터 합치기
+        all_elevation{idx} = elevation_angles;
+        all_azimuth{idx} = azimuth_angles;
+
+        close_elevation{idx} = c_ele_angle;
+        close_azimuth{idx} = c_azi_angle;
+    end
+
+    % 색상 정의
     colors = lines(5);
     colors = colors([1, 2, 5, 3, 5], :);
 
-    % Stairs plot
-    p_stairs = gobjects(1, length(visable_sat_mat)); % 핸들 배열 초기화
-    for i = 1:length(visable_sat_mat)
-        p_stairs(i) = stairs(time ./ 3600, visable_sat_mat{i}, ...
-                             'Color', colors(i, :), ...
-                             'LineWidth', 1); % 기본 선 굵기
-        hold on;
+
+    sat_names = dataset.constellation_name(target_idx_list);
+    for idx = 1:length(target_idx_list)
+        % Figure 생성
+        fig = figure(1516+idx);
+        fig.Color = 'white';
+        clf;
+    
+        p = polarscatter(deg2rad(all_azimuth{idx}), 90-all_elevation{idx}, 15, 'filled');
+        set(gca, 'ThetaZeroLocation', 'top', 'ThetaDir', 'clockwise', 'RTick', [0 20 40 60 80]);
+
+        theta_ticks = 0:30:330;
+        theta_labels = string(theta_ticks)+char(176);
+        theta_labels(theta_ticks == 0)   = "N";
+        theta_labels(theta_ticks == 90)  = "E";
+        theta_labels(theta_ticks == 180) = "S";
+        theta_labels(theta_ticks == 270) = "W";
+        radius_ticks = 0:20:80;
+        radius_labels = string(flip(radius_ticks))+char(176);
+   
+        set(gca, 'ThetaTick', theta_ticks, 'ThetaTickLabel', theta_labels, ...
+            'RTick', radius_ticks, 'RTickLabel', radius_labels);
+        
+        % 마커 색상 설정
+        p.MarkerFaceColor = colors(idx,:);
+        p.MarkerEdgeColor = colors(idx,:);
+        p.MarkerFaceAlpha = 0.7;
+        p.MarkerEdgeAlpha = 0.8;
+
+        
+        % 재관측 지점 강조
+        if ~isempty(close_azimuth{idx})
+            hold on;
+            p2 =polarscatter(deg2rad(close_azimuth{idx}), 90-close_elevation{idx},...
+                40, 'x', 'LineWidth', 1.8, 'MarkerEdgeColor', 'k');
+            
+        end
+        
+        % title(['Skyplot - ', sat_names{idx}], 'Interpreter', 'none');
+        set(gca, 'FontSize', 18);
+    
+    
+        % 제목 설정
+        % title(['Skyplot for Satellite ', sat_names{idx}], 'Interpreter', 'none');
+    
+        % 그림 저장
+        save_path = fullfile(save_dir, ['Skyplot_Satellite_', sat_names{idx}, '.fig']);
+        savefig(fig, save_path);
+        save_path = fullfile(save_dir, ['Skyplot_Satellite_', sat_names{idx}, '.png']);
+        saveas(fig, save_path);
     end
-
-    % 범례를 위한 Plot 핸들 생성
-    p_cov_sat = gobjects(1, length(target_idx_list)); % 핸들 배열 초기화
-    for i = 1:length(target_idx_list)
-        p_cov_sat(i) = plot(nan, nan, ...
-                            'Color', colors(i, :), ...
-                            'LineWidth', 2); % 굵은 선을 범례에 사용
-        hold on;
-    end
-
-    % 동적으로 생성된 legend 적용 및 위치 설정, LaTeX 해석을 사용
-    lgd = legend(p_cov_sat, dataset.constellation_name(target_idx_list), ...
-                 'Location', 'northwest', 'Interpreter', 'latex'); % 범례에 LaTeX 적용
-    set(lgd, 'FontSize', 14, 'FontWeight', 'bold'); % 범례 글꼴 크기와 두께 설정
-
-    % 축과 라벨의 글꼴 크기 및 두께 설정
-    set(gca, 'FontSize', 14); % 축 글꼴 크기 및 두께 설정
-    xlabel('Time (hours)', 'FontSize', 14, 'FontWeight', 'bold'); % X축 라벨 글꼴 크기 및 두께 설정
-    ylabel('# of Satellite', 'FontSize', 14, 'FontWeight', 'bold'); % Y축 라벨 글꼴 크기 및 두께 설정
-
-    xlim([0, max(time./3600)]);
-    ylim([0, 24]);
-    grid on;
-
-    ax = gca; % Get current axes
-    ax.YTick = 0:2:24; % Set y-axis ticks with interval 1
-
-    % Save figure
-    fig_file_pos_path = fullfile(save_dir, sprintf('result_sat_num.fig'));
-    savefig(fig, fig_file_pos_path);
-
-    fig_file_pos_path = fullfile(save_dir, sprintf('result_sat_num.png'));
-    saveas(fig, fig_file_pos_path);
 end

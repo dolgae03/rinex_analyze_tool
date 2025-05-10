@@ -1,5 +1,8 @@
 function plot_visible_prn(dataset, start, duration, save_dir)
-    %% 기준 수신기 위치 설정 (사용자의 실제 좌표 사용)
+    
+ global color_palette
+    colors = color_palette;
+%% 기준 수신기 위치 설정 (사용자의 실제 좌표 사용)
     xyz_const = wgslla2xyz(37.566535, 127.0277194, 38);  % 필요한 경우 실제 좌표로 변경
 
     %% 변수 초기화
@@ -10,9 +13,6 @@ function plot_visible_prn(dataset, start, duration, save_dir)
     time = dataset.time(start:start + duration);
     target_val = dataset.pr1;
 
-    % 색상 정의
-    colors = lines(5);
-    colors = colors([1, 2, 5, 3, 5], :);
 
     %% 각 별자리의 위성에 대한 가시성 계산 및 플롯
     for idx = 1:length(target_idx_list)

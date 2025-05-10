@@ -1,16 +1,29 @@
-function plot_multipath_elevation_error(dataset, start, duration, save_dir, frequency)
+function plot_multipath_histogram(dataset, start, duration, save_dir, frequency, rcv_type )
     
  global color_palette
     colors = color_palette;
-%% 모든 시간대에 대한 가시 위성수 생성
+RCV_TYPE_SMARTPHONE = 0;
+    RCV_TYPE_RECEIVER = 1;
+
+    %% 모든 시간대에 대한 가시 위성수 생성
     time = dataset.time(start:start+duration); % 시간 데이터
 
     xyz_const = wgslla2xyz(37.566535, 127.0277194, 38);
 
+    if rcv_type  == RCV_TYPE_SMARTPHONE
+        bin_edges = -60:2:60; y_max = 0.2; 
+    elseif rcv_type == RCV_TYPE_RECEIVER
+        bin_edges = -3:0.1:3; y_max = 0.2;
+    end
+
     if frequency == 1
         target_val = dataset.mp1;
+
     elseif frequency == 5
         target_val = dataset.mp5;
+        bin_edges = -20:1:20; y_max = 0.4; 
+%         bin_edges = -60:2:60; y_max = 0.08;
+   
     end
     
 
@@ -39,6 +52,9 @@ function plot_multipath_elevation_error(dataset, start, duration, save_dir, freq
     end
 
     %% Reference 위치 추정
+    xyz_const = wgslla2xyz(37.566535, 127.0277194, 38);
+
+
 
 
     %% Plot 수행
@@ -50,57 +66,34 @@ function plot_multipath_elevation_error(dataset, start, duration, save_dir, freq
     
         % Flatten and remove NaN values
         snr_flattened = snr_per_each_sat{i}(:); % SNR 데이터 플래튼
+        
         multipath_flattened = target_multipath{i}(:); % Multipath 데이터 플래튼
+
+%         multipath_flattened(abs(multipath_flattened ) > 50) = nan;
         
         valid_idx = ~isnan(snr_flattened) & ~isnan(multipath_flattened); % 유효 데이터 필터링
         snr_clean = snr_flattened(valid_idx); % 유효 SNR 데이터
         multipath_clean = multipath_flattened(valid_idx); % 유효 Multipath 데이터
-        multipath_clean = abs(multipath_clean);
-        
-        % SNR 구간별 평균 및 표준 편차 계산
-        snr_bins = 0:1:90; % SNR 구간 정의
-        bin_means = zeros(1, length(snr_bins)-1);
-        bin_std = zeros(1, length(snr_bins)-1);
-        bin_centers = zeros(1, length(snr_bins)-1);
-        
-        for j = 1:length(snr_bins)-1
-            bin_idx = snr_clean >= snr_bins(j) & snr_clean < snr_bins(j+1); % 현재 구간에 해당하는 데이터 필터링
-            if any(bin_idx)
-                bin_means(j) = mean(multipath_clean(bin_idx)); % 평균
-                bin_std(j) = std(multipath_clean(bin_idx)); % 표준 편차
-                bin_centers(j) = mean([snr_bins(j), snr_bins(j+1)]); % 구간 중심
-            else
-                bin_means(j) = NaN;
-                bin_std(j) = NaN;
-                bin_centers(j) = mean([snr_bins(j), snr_bins(j+1)]);
-            end
-        end
 
-        % Plot 평균 및 표준 편차 (Error bar)
-        errorbar(bin_centers, bin_means, bin_std, 'o', ...
-            'Color', colors(i, :), ...  % 마커 및 에러바 색상
-            'LineWidth', 1.5, ...      % 에러바 굵기
-            'MarkerSize', 6, ...       % 마커 크기
-            'MarkerFaceColor', colors(i, :), ... % 마커 내부 색상
-            'CapSize', 0, ...          % 캡 크기를 0으로 설정 (캡 제거)
-            'LineStyle', 'none');      % 선 스타일 제거 (Error bar만 표시)
+        std_mp = std(multipath_clean);
+        std_str = sprintf("STD: %.2f m", std_mp);
+        histogram(multipath_clean, bin_edges, 'Normalization','probability',...
+            'FaceColor', colors(i, :), 'DisplayName', std_str);
         
+        legend;
+
         % 그래프 설정
-        xlabel('Elevation (degree)', 'FontSize', 14, 'FontWeight', 'bold');
-        ylabel('Multipath Noise (m)', 'FontSize', 14, 'FontWeight', 'bold');
+        xlabel('Multipath Noise (m)', 'FontSize', 14, 'FontWeight', 'bold');
+        ylabel('Probability', 'FontSize', 14, 'FontWeight', 'bold');
         set(gca, 'FontSize', 14); % 축 글꼴 크기 및 두께 설정
-        xlim([0, 90]);
-        upper_limit = max(bin_means + bin_std, [], 'omitnan');
-        if ~isnan(upper_limit)
-            ylim([0, upper_limit + 0.5]);
-        else
-            ylim([0, 1]); % fallback value (or skip ylim 설정)
-        end
+        
         % title(['Multipath over Elevation : ', sat_names{i}]);
+        xlim([min(bin_edges) max(bin_edges)]); 
+        ylim([0 y_max]);
         grid on;
 
         % Save the figure
-        file_base = sprintf('plot_multipath_elevation_error_%s_%d', sat_names{i}, frequency);
+        file_base = sprintf('plot_multipath_histogram_%s_%d', sat_names{i}, frequency);
         
         savefig(fig, fullfile(save_dir, [file_base, '.fig']));
         saveas(fig, fullfile(save_dir, [file_base, '.png']));

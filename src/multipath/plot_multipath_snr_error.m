@@ -1,10 +1,14 @@
 function plot_multipath_snr_error(dataset, start, duration, save_dir, frequency)
-    %% 모든 시간대에 대한 가시 위성수 생성
+   
+ global color_palette
+    colors = color_palette;
+%% 모든 시간대에 대한 가시 위성수 생성
     target_val = dataset.snr1; % SNR 데이터
     time = dataset.time(start:start+duration); % 시간 데이터
 
     %% Constellation 별 가시 위성수 생성
-    target_idx_list = find([1,0,1,0,1] == 1);
+%     target_idx_list = find([1,0,1,0,1] == 1);
+    target_idx_list = find([1,0,0,0,0] == 1);
     sat_names = dataset.constellation_name(target_idx_list); % 위성 이름
 
     target_multipath = {};
@@ -24,8 +28,6 @@ function plot_multipath_snr_error(dataset, start, duration, save_dir, frequency)
 
     %% Reference 위치 추정
     xyz_const = wgslla2xyz(37.566535, 127.0277194, 38);
-    colors = lines(5); % 색상 정의
-    colors = colors([1, 2, 5, 3, 5], :);
 
     %% Plot 수행
     for i = 1:length(target_idx_list)
@@ -44,7 +46,7 @@ function plot_multipath_snr_error(dataset, start, duration, save_dir, frequency)
         multipath_clean = abs(multipath_clean);
         
         % SNR 구간별 평균 및 표준 편차 계산
-        snr_bins = 25:0.5:60; % SNR 구간 정의
+        snr_bins = 20:0.5:55; % SNR 구간 정의
         bin_means = zeros(1, length(snr_bins)-1);
         bin_std = zeros(1, length(snr_bins)-1);
         bin_centers = zeros(1, length(snr_bins)-1);
@@ -75,7 +77,7 @@ function plot_multipath_snr_error(dataset, start, duration, save_dir, frequency)
         xlabel('C/N0 (dB-Hz)', 'FontSize', 14, 'FontWeight', 'bold');
         ylabel('Multipath Noise (m)', 'FontSize', 14, 'FontWeight', 'bold');
         set(gca, 'FontSize', 14); % 축 글꼴 크기 및 두께 설정
-        xlim([25, 60]);
+        xlim([20, 55]);
         upper_limit = max(bin_means + bin_std, [], 'omitnan');
         if ~isnan(upper_limit)
             ylim([0, upper_limit + 0.5]);

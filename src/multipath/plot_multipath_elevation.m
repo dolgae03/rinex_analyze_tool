@@ -1,9 +1,12 @@
 function plot_multipath_elevation(dataset, start, duration, save_dir, frequency)
-    %% 모든 시간대에 대한 가시 위성수 생성
+ global color_palette
+    colors = color_palette;    
+%% 모든 시간대에 대한 가시 위성수 생성
     xyz_const = wgslla2xyz(37.566535, 127.0277194, 38);
 
     %% Constellation 별 가시 위성수 생성
-    target_idx_list = find([1,0,1,0,1] == 1);
+%     target_idx_list = find([1,0,1,0,1] == 1);
+    target_idx_list = find([1,0,0,0,0] == 1);
     
     if frequency == 1
         target_val = dataset.mp1;
@@ -31,10 +34,6 @@ function plot_multipath_elevation(dataset, start, duration, save_dir, frequency)
             end
         end
     end
-
-    colors = lines(5);
-    colors = colors([1, 2, 5, 3, 5], :);
-
    
     %% Plot 수행
     for i=1:length(target_idx_list)

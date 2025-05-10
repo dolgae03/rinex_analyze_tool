@@ -1,10 +1,14 @@
 function plot_multipath_snr(dataset, start, duration, save_dir, frequency)
-    %% 모든 시간대에 대한 가시 위성수 생성
+    
+
+ global color_palette
+    colors = color_palette;%% 모든 시간대에 대한 가시 위성수 생성
     target_val = dataset.snr1;
     time = dataset.time(start: start+duration);
 
     %% Constellation 별 가시 위성수 생성
-    target_idx_list = find([1,0,1,0,1] == 1);
+%     target_idx_list = find([1,0,1,0,1] == 1);
+    target_idx_list = find([1,0,0,0,0] == 1);
     sat_names = dataset.constellation_name(target_idx_list);
 
     target_multipath = cell(length(target_idx_list), 200);
@@ -27,9 +31,6 @@ function plot_multipath_snr(dataset, start, duration, save_dir, frequency)
     %% Reference 위치 추정 
     
     xyz_const = wgslla2xyz(37.566535, 127.0277194, 38);
-    colors = lines(5);
-    colors = colors([1, 2, 5, 3, 5], :);
-
        
     for i = 1:length(target_idx_list)
         % Create a new figure for each satellite
@@ -63,7 +64,7 @@ function plot_multipath_snr(dataset, start, duration, save_dir, frequency)
         xlabel('C/N0 (dB-Hz)', 'FontSize', 14, 'FontWeight', 'bold');
         ylabel('Multipath Noise (m)', 'FontSize', 14, 'FontWeight', 'bold');
         set(gca, 'FontSize', 14); % 축 글꼴 크기 및 두께 설정
-        xlim([25, 60]);
+        xlim([20, 55]);
         ylim([0, y_lim + 1]);
         % title(['Multipath over SNR : ', sat_names{i}]);
         grid on;

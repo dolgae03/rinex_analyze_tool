@@ -91,7 +91,7 @@ for idx = 1:length(target_idx_list)
     plot(x_all, y_all, '-', 'Color', colors(idx,:), 'LineWidth', 1.8);  % 중간색
     
     % === 슬립 구간 한번에 그림 ===
-    plot(x_slip, y_slip, '-', 'Color', 'k', 'LineWidth', 1.8);
+    plot(x_slip, y_slip, 'x', 'Color', 'r', 'LineWidth', 2);
         
     % ----- 축·제목 등 나머지 부분은 그대로 유지 -----
     xlabel('Time (hours)','FontSize',13,'FontWeight','bold');
@@ -106,8 +106,8 @@ for idx = 1:length(target_idx_list)
     if ~isempty(save_dir)
         if ~exist(save_dir,'dir'), mkdir(save_dir); end
         fname = sprintf('slip_interval_%s_%s', f_label, dataset.constellation_name{idx_c});
-        savefig(fig, fullfile(save_dir, [fname '.fig']));
-        saveas(fig,  fullfile(save_dir, [fname '.png']));
+%         savefig(fig, fullfile(save_dir, [fname '.fig']));
+%         saveas(fig,  fullfile(save_dir, [fname '.png']));
     end
 end
 end

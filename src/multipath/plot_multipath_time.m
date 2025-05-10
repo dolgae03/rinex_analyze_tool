@@ -3,7 +3,8 @@ function plot_multipath_time(dataset, start, duration, save_dir, frequency)
     time = dataset.time(start:start+duration); % 시간 데이터
     
     %% Constellation 별 가시 위성수 생성
-    target_idx_list = find([1,0,1,0,1] == 1);
+%     target_idx_list = find([1,0,1,0,1] == 1);
+    target_idx_list = find([1,0,0,0,0] == 1);
     sat_names = dataset.constellation_name(target_idx_list);
 
     target_multipath = cell(length(target_idx_list), 200);

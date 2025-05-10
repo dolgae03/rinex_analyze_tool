@@ -104,7 +104,7 @@ for arc=1:arc_num
             iphi(telirow,1)=NaN;
             iphi(telirow,3)=2;
         end
-        continue
+%         continue
     end
     
     % arc division with cycle slip detection
