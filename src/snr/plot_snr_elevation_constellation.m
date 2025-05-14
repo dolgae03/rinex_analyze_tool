@@ -14,13 +14,14 @@ function plot_snr_elevation_constellation(dataset, start, duration, save_dir)
     plot_elevation = {};
     plot_snr = {};
 
-%     target_idx_list = find([1,0,1,0,1] == 1);
-    target_idx_list = find([1,0,0,0,0] == 1);
+    target_idx_list = find([1,0,1,0,1] == 1);
+%     target_idx_list = find([1,0,0,0,0] == 1);
     sat_names = dataset.constellation_name(target_idx_list);
 
     for k=1:length(target_idx_list)
         elevation_angles = [];
         snr_values = [];
+        prn_values = [];
 
         for j=dataset.constellation_idx(target_idx_list(k)):dataset.constellation_idx(target_idx_list(k)+1)-1
             for i = start:start+duration
@@ -35,6 +36,7 @@ function plot_snr_elevation_constellation(dataset, start, duration, save_dir)
                 % Store elevation and SNR values
                 elevation_angles(end+1) = elevation;
                 snr_values(end+1) = target_val(i, j);
+                prn_values(end+1) = j;
             end
         end
         plot_elevation{k} = elevation_angles;
@@ -61,6 +63,7 @@ function plot_snr_elevation_constellation(dataset, start, duration, save_dir)
 
         grid on;
 
+%         scatter(plot_elevation{idx}, plot_snr{idx}, 4, colors(idx, :), 'filled');
         scatter(plot_elevation{idx}, plot_snr{idx}, 4, colors(idx, :), 'filled');
 
                 % Save figure if save directory is provided

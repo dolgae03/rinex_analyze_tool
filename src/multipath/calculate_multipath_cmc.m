@@ -14,14 +14,14 @@ function dataset = calculate_multipath_cmc(dataset, use_local_detrend)
     lam1 = c / fL1;          lam5 = c / fL5;    k = (fL5/fL1)^2;
 
     %% ── 측정값 ───────────────────────────────────────────
-    target_idx_list = find([1,0,0,0,0] == 1);
+    target_idx_list = find([1,0,1,0,0] == 1);
 
     for i = 1:length(target_idx_list)
         sv_list = dataset.constellation_idx(target_idx_list(i)):dataset.constellation_idx(target_idx_list(i)+1)-1;  
-%         sv_list = 6;
+%         sv_list = 5;
         for id_sv = sv_list
             C1 = dataset.pr1(:, id_sv);   C5 = dataset.pr3(:, id_sv);
-            L1 = dataset.ph1(:, id_sv);   L5 = dataset.ph3(:, id_sv);          % cyclesI
+            L1 = dataset.ph1(:, id_sv);   L5 = dataset.ph3(:, id_sv);          %clo cyclesI
             t = double(dataset.time_GPS);
 
             snr = dataset.snr1(:, id_sv);

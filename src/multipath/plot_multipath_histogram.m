@@ -11,7 +11,8 @@ RCV_TYPE_SMARTPHONE = 0;
     xyz_const = wgslla2xyz(37.566535, 127.0277194, 38);
 
     if rcv_type  == RCV_TYPE_SMARTPHONE
-        bin_edges = -60:2:60; y_max = 0.2; 
+%         bin_edges = -60:2:60; y_max = 0.2; 
+         bin_edges = -60:2:60; y_max = 0.08; 
     elseif rcv_type == RCV_TYPE_RECEIVER
         bin_edges = -3:0.1:3; y_max = 0.2;
     end
@@ -21,15 +22,15 @@ RCV_TYPE_SMARTPHONE = 0;
 
     elseif frequency == 5
         target_val = dataset.mp5;
-        bin_edges = -20:1:20; y_max = 0.4; 
-%         bin_edges = -60:2:60; y_max = 0.08;
+%         bin_edges = -20:1:20; y_max = 0.4; 
+        bin_edges = -60:2:60; y_max = 0.08;
    
     end
     
 
     %% Constellation 별 가시 위성수 생성
-%     target_idx_list = find([1,0,1,0,1] == 1);
-    target_idx_list = find([1,0,0,0,0] == 1);
+    target_idx_list = find([1,0,1,0,1] == 1);
+%     target_idx_list = find([1,0,0,0,0] == 1);
     sat_names = dataset.constellation_name(target_idx_list); % 위성 이름
 
     target_multipath = {[], [], []};

@@ -25,54 +25,12 @@ plot_double_difference(base_dataset, rover_dataset, start_idx, duration, save_di
 
 disp('Double difference plot complete.');
 
-function single_diff_doppler(base_dataset, rover_dataset, start_idx, duration, save_dir)
-    % ── 상수 ────────────────────────────────────────────
-    c = 299792458;          % 빛의 속도 [m/s]
-    fL1 = 1575.42e6;        % L1 주파수 [Hz]
-    fL5 = 1176.45e6;        % L5 주파수 [Hz]
-    lam1 = c / fL1;         % L1 파장 [m]
-    lam5 = c / fL5;         % L5 파장 [m]
 
-    % ── 사용자 설정 ─────────────────────────────────────
-    target_sv_idx = 11;     % 분석할 대상 위성 번호
-    time_range = start_idx : (start_idx + duration - 1);
-
-    % ── 유효성 확인 ─────────────────────────────────────
-    is_valid_base = ~isnan(base_dataset.dop1(time_range,:));
-    is_valid_rover = ~isnan(rover_dataset.dop1(time_range,:));
-    common_sv_mask = any(is_valid_base & is_valid_rover, 1);
-    sv_indices = find(common_sv_mask);
-
-    if numel(sv_indices) < 2
-        warning('공통 위성이 2개 이상 필요합니다.');
-        return;
-    end
-
-    if ~ismember(target_sv_idx, sv_indices)
-        warning('지정한 target_sv_idx는 공통 위성이 아닙니다.');
-        return;
-    end
-
-    sv = sv_indices(1);  % 기준 위성은 자동 선택
-
-    % ── Doppler 단일 차분 계산 ─────────────────────────
-    rover_dataset.dop1 = rover_dataset.dop1 ./ lam1;
-    rover_dataset.dop3 = rover_dataset.dop3 ./ lam5;
-
-    % 시간 벡터
-    t = 1:duration;
-    sd = rover_dataset.dop1(time_range,sv) + base_dataset.dop1(time_range,sv);   % [m/s] 환산
-    fig = figure('Name',['SD-Doppler'] , 'NumberTitle','off'); clf; hold on; grid on;
-    plot(t, sd, 'LineWidth',1.2);
-    xlabel('Time [s]'); ylabel('Single Difference [m/s]');
-    title(sprintf('Doppler Single Difference – SV %d',  sv));
-    saveas(fig, fullfile(save_dir, sprintf('sd_doppler_sv%d.fig', sv)));
-end
 
 function plot_double_difference(base_dataset, rover_dataset, start_idx, duration, save_dir)
-    target_idx_list = find([1 0 0 0 0]==1);
-    freq_rover = [1575.42e6 nan 1575.42e6 nan 1575.42e6];
-    freq_base = [1575.42e6 nan 1575.42e6 nan 1561.098e6];
+    target_idx_list = find([0 0 0 0 1]==1);
+    freq_rover = {1575.42e6 nan 1575.42e6 nan 1176.45};
+    freq_base = {1575.42e6 nan 1575.42e6 nan 1176.45};
     time_range = start_idx : (start_idx + duration - 1);
     
     
@@ -84,18 +42,15 @@ function plot_double_difference(base_dataset, rover_dataset, start_idx, duration
         dd_all = [];
         c=  299792458;
         
-        lam_rover = c/freq_rover(target_idx_list(i));
-        lam_base = c/freq_base(target_idx_list(i));
+        lam_rover = c/freq_rover{target_idx_list(i)};
+        lam_base = c/freq_base{target_idx_list(i)};
 
             
         sv_list_all = base_dataset.constellation_idx(target_idx_list(i)): base_dataset.constellation_idx(target_idx_list(i)+1)-1;
     
         % 유효성 확인
-        base_ph = base_dataset.ph1(time_range, sv_list_all);
-        rover_ph = rover_dataset.ph1(time_range, sv_list_all) ./lam_rover;
-
-        base_pr = base_dataset.pr1(time_range, sv_list_all);
-        rover_pr = rover_dataset.pr1(time_range, sv_list_all);
+        base_ph = base_dataset.ph3(time_range, sv_list_all);
+        rover_ph = rover_dataset.ph3(time_range, sv_list_all) ./lam_rover;
         
 
 
@@ -130,9 +85,10 @@ function plot_double_difference(base_dataset, rover_dataset, start_idx, duration
             trend = polyval(p, t);
             dd_detrended = dd - trend;
             dd_all = [dd_all dd_detrended];
-
+            
             figure(1000);
-            plot(dd);
+            plot(dd_detrended);
+            
         end
 
 

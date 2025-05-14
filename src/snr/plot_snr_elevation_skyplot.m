@@ -16,7 +16,7 @@ global color_palette
     target_val = dataset.snr1;
 
 %     target_idx_list = find([1,0,1,0,1] == 1);
-      target_idx_list = find([1,0,0,0,0] == 1);
+      target_idx_list = find([1,0,1,0,1] == 1);
     sat_names = dataset.constellation_name(target_idx_list);
     
     for k = 1:length(target_idx_list)

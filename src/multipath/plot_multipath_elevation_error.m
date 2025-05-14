@@ -15,8 +15,8 @@ function plot_multipath_elevation_error(dataset, start, duration, save_dir, freq
     
 
     %% Constellation 별 가시 위성수 생성
-%     target_idx_list = find([1,0,1,0,1] == 1);
-    target_idx_list = find([1,0,0,0,0] == 1);
+    target_idx_list = find([1,0,1,0,1] == 1);
+%     target_idx_list = find([1,0,0,0,0] == 1);
     sat_names = dataset.constellation_name(target_idx_list); % 위성 이름
 
     target_multipath = {[], [], []};

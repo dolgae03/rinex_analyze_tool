@@ -26,36 +26,50 @@ function plot_visible_skyplot(dataset, start, duration, save_dir)
 
         c_ele_angle = [];
         c_azi_angle = [];
+        
+          % constellation 내 위성 인덱스 범위
+        start_idx = dataset.constellation_idx(k);
+        end_idx = dataset.constellation_idx(k+1) - 1;
 
-        for j = dataset.constellation_idx(k):dataset.constellation_idx(k + 1) - 1
-            is_close = false;
-            is_first = true;
+        for j = start_idx:end_idx
+            % 위성 j에 대한 가시성 여부
+            pr1 = dataset.pr1(start:start+duration, j);
+            visibility = ~isnan(pr1);
 
+            % 전체 가시 구간 데이터 수집
             for i = 1:length(time)
-                sv_pos = squeeze(dataset.XS_tot1(start + i - 1, j, :));
-                if any(isnan(sv_pos))
-                    if ~isempty(elevation_angles) && ~is_first
-                        c_ele_angle = [c_ele_angle; elevation_angles(end, :)];
-                        c_azi_angle = [c_azi_angle; azimuth_angles(end, :)];
-                        is_close = true;
+                if visibility(i)
+                    sv_pos = squeeze(dataset.XS_tot1(start + i - 1, j, :));
+                    [az, el] = calculateElevationAzimuth(xyz_const, sv_pos);
+                    if el >= 0
+                        azimuth_angles = [azimuth_angles; az];
+                        elevation_angles = [elevation_angles; el];
                     end
-                    continue;
                 end
-                [azimuth, elevation] = calculateElevationAzimuth(xyz_const, sv_pos);
+            end
 
-                if elevation < 0
-                    continue;
+            % 트래킹 단절 구간 탐지
+            changes = diff([0; visibility; 0]);
+            start_vis = find(changes == 1);
+            end_vis = find(changes == -1) - 1;
+
+            for v = 2:length(start_vis)
+                % 끊기기 직전
+                t1 = end_vis(v - 1);
+                sv1 = squeeze(dataset.XS_tot1(start + t1 - 1, j, :));
+                [az1, el1] = calculateElevationAzimuth(xyz_const, sv1);
+                if el1 >= 0
+                    c_azi_angle = [c_azi_angle; az1];
+                    c_ele_angle = [c_ele_angle; el1];
                 end
 
-                % 방위각과 고도각 저장
-                elevation_angles = [elevation_angles; elevation];
-                azimuth_angles = [azimuth_angles; azimuth];
-                is_first = false;
-                
-                if is_close
-                    c_ele_angle = [c_ele_angle; elevation_angles(end, :)];
-                    c_azi_angle = [c_azi_angle; azimuth_angles(end, :)];
-                    is_close = false;
+                % 재관측 시작
+                t2 = start_vis(v);
+                sv2 = squeeze(dataset.XS_tot1(start + t2 - 1, j, :));
+                [az2, el2] = calculateElevationAzimuth(xyz_const, sv2);
+                if el2 >= 0
+                    c_azi_angle = [c_azi_angle; az2];
+                    c_ele_angle = [c_ele_angle; el2];
                 end
             end
         end
@@ -78,7 +92,7 @@ function plot_visible_skyplot(dataset, start, duration, save_dir)
         clf;
     
         p = polarscatter(deg2rad(all_azimuth{idx}), 90-all_elevation{idx}, 15, 'filled');
-        set(gca, 'ThetaZeroLocation', 'top', 'ThetaDir', 'clockwise', 'RTick', [0 20 40 60 80]);
+        set(gca, 'ThetaZeroLocation', 'top', 'ThetaDir', 'counterclockwise', 'RTick', [0 30 60 90]);
 
         theta_ticks = 0:30:330;
         theta_labels = string(theta_ticks)+char(176);
@@ -86,7 +100,7 @@ function plot_visible_skyplot(dataset, start, duration, save_dir)
         theta_labels(theta_ticks == 90)  = "E";
         theta_labels(theta_ticks == 180) = "S";
         theta_labels(theta_ticks == 270) = "W";
-        radius_ticks = 0:20:80;
+        radius_ticks = 0:30:90;
         radius_labels = string(flip(radius_ticks))+char(176);
    
         set(gca, 'ThetaTick', theta_ticks, 'ThetaTickLabel', theta_labels, ...

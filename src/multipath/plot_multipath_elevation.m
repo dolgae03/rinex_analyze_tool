@@ -5,8 +5,8 @@ function plot_multipath_elevation(dataset, start, duration, save_dir, frequency)
     xyz_const = wgslla2xyz(37.566535, 127.0277194, 38);
 
     %% Constellation 별 가시 위성수 생성
-%     target_idx_list = find([1,0,1,0,1] == 1);
-    target_idx_list = find([1,0,0,0,0] == 1);
+    target_idx_list = find([1,0,1,0,1] == 1);
+%     target_idx_list = find([1,0,0,0,0] == 1);
     
     if frequency == 1
         target_val = dataset.mp1;

@@ -33,8 +33,8 @@ gt_rover_lla = [36.3722758811494	127.358734506487	88.5161490465186];
 % t_converge = 3600*4;
 
 
-% nav_type = 'ppp';
-nav_type = 'spp';
+nav_type = 'ppp';
+% nav_type = 'spp';
 
 
 folder_dir = fullfile('./data/pos', dataname);
@@ -81,7 +81,7 @@ end
 
 
 
-%% 
+%%  enu 계산
 t_base = pos_base_lla.time;
 t_rover = pos_rover_lla.time;
 
@@ -92,27 +92,62 @@ pos_base_enu = lla2enu(pos_base_lla, gt_base_lla);
 pos_rover_enu = lla2enu(pos_rover_lla, gt_base_lla);
 
 error_base = pos_base_enu - gt_base_enu;
-rms_base = sqrt(error_base(:,1).^2 + error_base(:,2).^2 + error_base(:,3).^2);
 
 error_rover = pos_rover_enu - gt_rover_enu;
-rms_rover = sqrt(error_rover(:,1).^2 + error_rover(:,2).^2 + error_rover(:,3).^2);
 
-e_base = abs(pos_base_enu - gt_base_enu);
-e_rover = abs(error_rover );
+
+
+
+
+
+
+
+%% %%  ppp 수렴 후 enu
+
+
+
+% error_data = error_rover;
+% t_data = t_rover;
+
+error_data = error_base;
+t_data = t_base;
+
+
+% t_start = 0;
+t_start = 120;
+
+indices = (t_data > t_start) & (t_data < t_max);
+
+
+enu_converge = error_data(indices,  :);
+std_enu = std(enu_converge);
+fprintf("std_e: %2.3f | std_n: %2.3f | std_u: %2.3f\n", std_enu(1), std_enu(2), std_enu(3));
+
+
+hor = sqrt(enu_converge(:,1).^2 + enu_converge(:,2).^2);
+ver = abs(enu_converge(:,3));
+
+mean(hor)
+mean(ver)
+
+
+figure;
+plot(t_data(indices)/3600, enu_converge)
+
 
 
 %% Error over time
 
-t_converge = 1;
+% t_converge = 1;
 
 figure(100);clf; hold on; set(gca, 'FontSize', 14)
 str_rover = sprintf("Smartphone: %.2f m" , mean(rms_rover(t_converge:end)));
 str_base = sprintf("Receiver: %.2f m" , mean(rms_base(t_converge:end)));
-% plot(t_rover./3600, rms_rover, 'DisplayName', str_rover, 'Color', colors(1,:), 'LineWidth', 2.0);
+plot(t_rover./3600, rms_rover, 'DisplayName', str_rover, 'Color', colors(1,:), 'LineWidth', 2.0);
 plot(t_base./3600, rms_base, 'DisplayName', str_base, 'Color', colors(5,:), 'LineWidth', 2.0);
 xlabel('Time (hour)');
 ylabel('3D RMS Error (m)');
-% xlim([0 (t_max/3600)]);
+xlim([0 (t_max/3600)]);
 grid on; legend; hold off;
 
 
@@ -122,8 +157,7 @@ grid on; legend; hold off;
 savefig(figure(100), fullfile(save_dir, [nav_type, '_rms_error',  '.fig']));
 saveas(figure(100), fullfile(save_dir, [nav_type, '_rms_error', '.png']) )
 
-figure
-plot(t_base/3600, rms_base)
+
 
 
 
@@ -163,57 +197,25 @@ saveas(gcf,fullfile(save_dir, [nav_type, '_errors_enu', '.png']) )
 
 %% SPP Trajectory 
 
-fig2 = figure(5873); 
-clf; hold on; grid on; axis equal
-% title("Trajectory ");
+% fig2 = figure(5873); 
+set(fig2, "Position", [100 100 700 500])
+clf; hold on; grid on;
+title("Trajectory ");
 scatter(pos_rover_enu(:,1), pos_rover_enu(:,2), 50, 'o',  'DisplayName', 'Est-Smartphone', 'MarkerEdgeColor', colors(1,:));
-scatter(pos_base_enu(:,1), pos_base_enu(:,2), 50,'o',  'DisplayName', 'Est-Receiver', 'MarkerFaceColor', colors(5,:), 'MarkerEdgeColor', colors(5,:));
+scatter(pos_base_enu(:,1), pos_base_enu(:,2), 50,'o',  'DisplayName', 'Est-Receiver', 'MarkerEdgeColor', colors(5,:), 'MarkerFaceColor', colors(5,:));
 
-scatter(gt_rover_enu(:,1), gt_rover_enu(:,2), 100,'filled', 'r^', 'MarkerEdgeColor', [1 1 1], 'DisplayName', 'True-Smartphone')
-scatter(gt_base_enu(:,1), gt_base_enu(:,2), 100, 'filled', 'k^', 'MarkerEdgeColor', [1 1 1], 'DisplayName', 'True-Receiver');
+scatter(gt_rover_enu(:,1), gt_rover_enu(:,2), 100,'filled', 'k^', 'DisplayName', 'True-Smartphone')
+scatter(gt_base_enu(:,1), gt_base_enu(:,2), 100, 'filled', 'r^',  'DisplayName', 'True-Receiver');
 
 xlabel('East (m)'); ylabel('North (m)'); 
-% legend('Location', 'northeastoutside');
-set(gca, 'fontsize', 15);
+legend('Location', 'northeastoutside');
+axis equal;
+set(gca, 'fontsize', 13);
+xlim
 
+savefig(gcf, fullfile(save_dir, [nav_type, '_trajectory', '.fig']));
+saveas(gcf,fullfile(save_dir, [nav_type, '_trajectory' , '.png']) )
 
-
-rover_std = std(pos_rover_enu);
-cov_rover = cov([pos_rover_enu(:,1:2)]);
-base_std = std(pos_base_enu)
-
-% mu = mean(pos_rover_enu(:, 1:2));
-% k = 1;
-% theta = linspace(0, 2*pi, 100);
-% [V, D] = eig(cov_rover);
-% radii = k*sqrt(diag(D));
-% ellipse = (V * diag(radii)) * [cos(theta); sin(theta)];
-% ellipse = ellipse + mu';  % 중심 이동
-% plot(ellipse(1, :), ellipse(2, :), 'r', 'LineWidth', 1.5);  % 타원
-% 
-% k = 2;
-% 
-% radii = k*sqrt(diag(D));
-% ellipse = (V * diag(radii)) * [cos(theta); sin(theta)];
-% ellipse = ellipse + mu';  % 중심 이동
-% plot(ellipse(1, :), ellipse(2, :), 'r', 'LineWidth', 1.5);  % 타원
-% xlim([-15 25 ]); ylim([-40 40])
-
-% savefig(gcf, fullfile(save_dir, [nav_type, '_trajectory', '.fig']));
-% saveas(gcf,fullfile(save_dir, [nav_type, '_trajectory' , '.png']) )
-
-
-%%
-
-
-
-figure; hold on; grid on; set(gca, 'fontsize', 15)
-plot(t_rover/3600, abs(pos_rover_enu(:,3)),'Color', colors(1,:), 'LineWidth', 0.8);
-plot(t_base/3600, abs(pos_base_enu(:,3)),'Color', colors(5,:),'LineWidth', 2.0)
-xlim([0 t_max/3600]);
-xlabel('Time [hour]'); ylabel('Error in U [m]')
-savefig(gcf, fullfile(save_dir, [nav_type, '_u_error', '.fig']));
-saveas(gcf, fullfile(save_dir, [nav_type, '_u_error', '.png']));
 
 
 %% calculate enu 
@@ -275,46 +277,6 @@ set(gca, 'FontSize', 15);
 
 
 
-
-% RMS 오차 계산 (ENU에서 원점까지의 거리)
-rms_error = sqrt(sum(enu.^2, 2));
-
-% 시간 축 데이터
-time = pos_data.time;
-
-% % RMS 오차 Plot
-figure(2); clf; hold on;
-str = sprintf("mean: %.2f m" , mean(rms_error));
-colors = lines(5);
-plot(time, rms_error, 'b.-', 'DisplayName', str);
-xlabel('Time (hour)');
-ylabel('3D RMS Error (m)');
-title('3D RMS Position Error');
-grid on; legend; hold off;
-
-% 수평 오차: sqrt(E^2 + N^2)
-horizontal_error = sqrt(enu(:,1).^2 + enu(:,2).^2);
-
-% 수직 오차: abs(U)
-vertical_error = abs(enu(:,3));
-
-% % 수평 오차 Plot
-figure(3);clf; hold on;
-str = sprintf("mean: %.2f m" , mean(horizontal_error));
-plot(time, horizontal_error, 'r.-', 'DisplayName', str);
-xlabel('Time (hour)');
-ylabel('Horizontal Error (m)');
-title('Horizontal Position Error');
-grid on; legend; hold off;
-
-% 수직 오차 Plot
-figure(4); clf; hold on;
-str = sprintf("mean: %.2f m" , mean(vertical_error));
-plot(time, vertical_error, 'g.-', 'DisplayName', str );
-xlabel('Time (hour)');
-ylabel('Vertical Error (m)');
-title('Vertical Position Error');
-grid on; legend; hold off;
 
 
 

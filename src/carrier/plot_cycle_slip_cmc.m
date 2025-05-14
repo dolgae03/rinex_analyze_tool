@@ -23,8 +23,8 @@ end
 time  = dataset.time(start : start+duration);         % Nx1
 idx_t = start : start+duration;                       % 행 인덱스                                 % 최대 6개 별자리 색
 
-% target_idx_list = find([1, 0, 1, 0, 1] == 1);
-target_idx_list = find([1, 0, 0, 0, 0] == 1);
+target_idx_list = find([1, 0, 1, 0, 1] == 1);
+% target_idx_list = find([1, 0, 0, 0, 0] == 1);
 
 % 색상 정의
 colors = color_palette;
@@ -50,8 +50,9 @@ for k = 1:length(target_idx_list)
     x_slip = [];
     y_slip = [];
 
-    sv_list = dataset.constellation_idx(k):dataset.constellation_idx(k + 1) - 1;
-    for sv = sv_list 
+    sv_list = dataset.constellation_idx(idx_c):dataset.constellation_idx(idx_c + 1) - 1;
+    for prn = 1:length(sv_list)
+        sv = sv_list(prn);
         t_all = time / 3600;
         for i = 1: length(t_all)
             is_slip = flag(i,sv)>1;
@@ -64,11 +65,11 @@ for k = 1:length(target_idx_list)
                     continue;
                 end
                  x_all = [x_all; t_all(i)];
-                 y_all = [y_all;  sv];
+                 y_all = [y_all;  prn];
             end
             if is_slip
                  x_slip = [x_slip;  t_all(i)];
-                 y_slip = [y_slip; sv];
+                 y_slip = [y_slip; prn];
             end
         end
         x_all = [x_all; nan];
@@ -76,26 +77,15 @@ for k = 1:length(target_idx_list)
         x_slip = [x_slip; nan];
         y_slip = [y_slip; nan];
     
-        % === 정상 구간 ===
-        
-%         x_all = [x_all; nan; t_all(is_valid)];
-%         y_all = [y_all; nan; s*ones(sum(is_valid),1)];
-%         c_all = [c_all; nan(1,3); colors(idx,:)];  % 색상은 post-processing
-    
-        % === 슬립 구간 ===
-%         slip_idx = find(slip_s);
-%         slip_idx = slip_idx(slip_idx > 1);
-%         for j = slip_idx'
-% %             x_slip = [x_slip, NaN, t_all(j - 1), t_all(j)];
-% %             y_slip = [y_slip, NaN, s, s];
-%             x_slip = [x_slip, t_all(j)];
-%             y_slip = [y_slip, s];
-% 
-%         end
+
     end
 
     % === 전체 정상구간 한번에 그림 ===
-    plot(x_all, y_all, 'o',  'MarkerSize', 2, 'MarkerFaceColor', colors(k,:), 'MarkerEdgeColor', colors(k,:));  % 중간색
+    c_idx = k;
+    if (c_idx == 2) 
+        c_idx = 4; 
+    end
+    plot(x_all, y_all, 'o',  'MarkerSize', 4, 'MarkerFaceColor', colors(c_idx,:), 'MarkerEdgeColor', colors(c_idx,:));  % 중간색
     
     % === 슬립 구간 한번에 그림 ===
     plot(x_slip, y_slip, 'x', 'Color', 'r', 'LineWidth', 2);
@@ -106,6 +96,11 @@ for k = 1:length(target_idx_list)
 
     xlim([0 max(time)/3600]);
     ylim([0.5 n_sat+0.5]);
+    
+    if (idx_c == 5) %bds
+        ylim([15 50]);
+    end
+
     grid on; set(gca,'FontSize',15);
 
     if ~isempty(save_dir)

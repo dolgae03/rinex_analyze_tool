@@ -43,7 +43,7 @@ function plot_visible_prn(dataset, start, duration, save_dir)
                 vis_end = end_vis(v);
                 % 가시성 구간 플롯
                 plot(time(vis_start:vis_end)./3600, repmat(s, vis_end - vis_start + 1, 1), ...
-                     'LineWidth', 1.5, 'Color', colors(idx, :));
+                     'LineWidth', 3, 'Color', colors(idx, :));
                 % 가시성 시작/끝에 마커 추가
                 if v > 1 && v < length(start_vis)
                     plot(time(vis_start)./3600, s, 'o', 'Color', 'k', 'MarkerFaceColor', 'k', 'MarkerSize', 4);
@@ -59,6 +59,9 @@ function plot_visible_prn(dataset, start, duration, save_dir)
         % 축 한계 및 눈금 설정
         xlim([0, max(time./3600)]);
         ylim([0, max_prn_num(idx)]);
+        if (constellation == 5) %bds
+            ylim([15 50]);
+        end
         yticks(0:4:max_prn_num(idx));
         set(gca, 'FontSize', 14);
 

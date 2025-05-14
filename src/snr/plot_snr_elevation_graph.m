@@ -7,8 +7,8 @@ function plot_snr_elevation_graph(dataset, start, duration, save_dir)
     %% 모든 시간대에 대한 가시 위성수 생성
     target_val = dataset.snr1;
    
-%     target_idx_list = find([1,0,1,0,1] == 1);
-    target_idx_list = find([1,0,0,0,0] == 1);
+    target_idx_list = find([0,0,0,0,1] == 1);
+%     target_idx_list = find([1,0,0,0,0] == 1);
 
     sat_names = dataset.constellation_name(target_idx_list);
 
@@ -18,6 +18,8 @@ function plot_snr_elevation_graph(dataset, start, duration, save_dir)
 
     for k=1:length(target_idx_list)
          sv_list = dataset.constellation_idx(target_idx_list(k)):dataset.constellation_idx(target_idx_list(k)+1)-1;
+        
+
         mean_snr = mean(target_val(:,sv_list),'all', 'omitnan')
         std_snr = std(target_val(:,sv_list), 0, 'all', 'omitnan')
        
@@ -51,7 +53,7 @@ function plot_snr_elevation_graph(dataset, start, duration, save_dir)
     for idx = 1:length(target_idx_list)
         for check_idx = 1:3
             fig = figure(583 + idx*10 + check_idx);
-            set(gcf,'Position', [100 300 600 400]);  % [left bottom width height]
+%             set(gcf,'Position', [100 300 600 400]);  % [left bottom width height]
             clf;
             fig.Color = 'white';
             hold on;
@@ -74,7 +76,7 @@ function plot_snr_elevation_graph(dataset, start, duration, save_dir)
             ylabel('Probability', 'FontSize', 14, 'FontWeight', 'bold');
             % title(['Histogram of SNR for ', sat_names{idx}, ' (Elevation bin ', num2str(check_idx), ')']);
             xlim([min(bin_edges) max(bin_edges)]);
-            ylim([0, 0.18])
+            ylim([0, 0.3])
             legend('Location', 'northwest');
 
             % Set font size
@@ -141,7 +143,7 @@ function plot_snr_elevation_graph(dataset, start, duration, save_dir)
     for idx = 1:length(target_idx_list)
         for check_idx = 1:3
             fig = figure(583 + idx*10 + check_idx);
-            set(gcf,'Position', [100 300 600 400]);  % [left bottom width height]
+%             set(gcf,'Position', [100 300 600 400]);  % [left bottom width height]
 
             clf;
             fig.Color = 'white';
@@ -165,7 +167,7 @@ function plot_snr_elevation_graph(dataset, start, duration, save_dir)
             ylabel('Probability', 'FontSize', 14, 'FontWeight', 'bold');
             % title(['Histogram of SNR for ', sat_names{idx}, ' (Elevation bin ', num2str(check_idx), ')']);
             xlim([min(bin_edges) max(bin_edges)]);
-            ylim([0, 0.18])
+            ylim([0, 0.3])
             legend('Location','northwest');
 
             % Set font size

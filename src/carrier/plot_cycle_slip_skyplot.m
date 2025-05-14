@@ -5,7 +5,7 @@ function plot_cycle_slip_skyplot(dataset, start, duration, save_dir, frequency)
 
     %% 변수 초기화
     % 대상 별자리 인덱스 설정 (예: [1, 3, 5])
-    target_idx_list = find([1, 0, 0, 0, 0] == 1);
+    target_idx_list = find([1, 0, 1, 0, 1] == 1);
     sat_names = dataset.constellation_name(target_idx_list);
     time = dataset.time(start:start + duration);
     phase = dataset.ph1(start:start + duration,:);
@@ -40,9 +40,9 @@ function plot_cycle_slip_skyplot(dataset, start, duration, save_dir, frequency)
                 is_normal = is_valid & ~is_slip;
                 
                 sv_pos = squeeze(dataset.XS_tot1(start + i - 1, j, :));
-%                 if any(isnan(sv_pos))
-%                     continue;
-%                 end
+                if any(isnan(sv_pos))
+                    continue;
+                end
                 [azimuth, elevation] = calculateElevationAzimuth(xyz_const, sv_pos);
 
                 if elevation < 0
@@ -71,9 +71,7 @@ function plot_cycle_slip_skyplot(dataset, start, duration, save_dir, frequency)
         cs_azimuth{idx} = c_azi_angle;
     end
     
-    total_cs = numel(cs_elevation{1});
-    high_cs = sum(cs_elevation{1}>30);
-    fprintf("probability of high cs: %2.2fp\n", 100*high_cs/total_cs);
+    
 
     % 색상 정의
     colors = color_palette ;
@@ -86,8 +84,8 @@ function plot_cycle_slip_skyplot(dataset, start, duration, save_dir, frequency)
         fig.Color = 'white';
         clf;
     
-        p = polarscatter(deg2rad(all_azimuth{idx}), 90-all_elevation{idx}, 30, 'filled');
-        set(gca, 'ThetaZeroLocation', 'top', 'ThetaDir', 'clockwise', 'RTick', [0 20 40 60 80]);
+        p = polarscatter(deg2rad(all_azimuth{idx}), 90-all_elevation{idx}, 60, 'filled');
+        set(gca, 'ThetaZeroLocation', 'top', 'ThetaDir', 'counterclockwise', 'RTick', [0 30 60 90]);
 
         theta_ticks = 0:30:330;
         theta_labels = string(theta_ticks)+char(176);
@@ -95,15 +93,20 @@ function plot_cycle_slip_skyplot(dataset, start, duration, save_dir, frequency)
         theta_labels(theta_ticks == 90)  = "E";
         theta_labels(theta_ticks == 180) = "S";
         theta_labels(theta_ticks == 270) = "W";
-        radius_ticks = 0:20:80;
+        radius_ticks = 0:30:90;
         radius_labels = string(flip(radius_ticks))+char(176);
    
         set(gca, 'ThetaTick', theta_ticks, 'ThetaTickLabel', theta_labels, ...
             'RTick', radius_ticks, 'RTickLabel', radius_labels);
         
         % 마커 색상 설정
-        p.MarkerFaceColor = colors(idx,:);
-        p.MarkerEdgeColor = colors(idx,:);
+        c_idx = idx;
+        if (c_idx == 2) 
+            c_idx = 4; 
+        end
+
+        p.MarkerFaceColor = colors(c_idx,:);
+        p.MarkerEdgeColor = colors(c_idx,:);
         p.MarkerFaceAlpha = 0.7;
         p.MarkerEdgeAlpha = 0.8;
 
@@ -112,12 +115,12 @@ function plot_cycle_slip_skyplot(dataset, start, duration, save_dir, frequency)
         if ~isempty(cs_azimuth{idx})
             hold on;
             p2 =polarscatter(deg2rad(cs_azimuth{idx}), 90-cs_elevation{idx},...
-                30, 'rx', 'LineWidth', 2.0);
+                60, 'rx', 'LineWidth', 1.2);
             
         end
         
         % title(['Skyplot - ', sat_names{idx}], 'Interpreter', 'none');
-        set(gca, 'FontSize', 15);
+        set(gca, 'FontSize', 17);
     
     
         % 제목 설정
@@ -129,12 +132,23 @@ function plot_cycle_slip_skyplot(dataset, start, duration, save_dir, frequency)
         save_path = fullfile(save_dir, ['Skyplot_cycleslip_', sat_names{idx}, '.png']);
         saveas(fig, save_path);
 
+        %% histogram over elevations
+        total_cs = numel(cs_elevation{idx});
+        high_cs = sum(cs_elevation{idx}>30);
+        str_cs = sprintf("p(el>30|cs): %2.2f%%\n", 100*high_cs/total_cs);
+
 
         fig = figure();
         bin_edges = 0:2:90;
-        histogram(cs_elevation{1}, bin_edges, 'Normalization','probability', 'FaceColor', colors(idx,:)); hold on; grid on;
+        histogram(cs_elevation{idx}, bin_edges, 'Normalization','probability', ...
+            'FaceColor', colors(idx,:), ...
+            'DisplayName', str_cs); 
+        
+        
+        hold on; grid on;
         xlabel("Elevation (deg)");
         ylabel("P(Cycle Slips)");
+        legend;
         xlim([0, 90]); ylim([0, 0.25])
         set(gca, 'fontsize', 15);
         save_path = fullfile(save_dir, ['histogram_cycleslip_', sat_names{idx}, '.fig']);

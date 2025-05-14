@@ -1,5 +1,6 @@
 % Clear existing paths and variables
 clear;
+warning('off', 'all')
 
 % Add paths for src and utils folders
 addpath('./src/carrier');
@@ -17,35 +18,40 @@ RCV_TYPE_RECEIVER = 1;
 
 global color_palette
 
-color_list = lines(5);
-% color_palette = colors([1, 2, 5, 3, 5], :); % report
-% color_palette = color_list([5, 5, 5, 5, 5], :); % receiver
-color_palette = color_list([1, 1, 1, 1, 1], :); % opensky - smartphone
-% color_palette = color_list([2, 2, 2, 2, 2], :); % URBAN
-% color_palette = color_list([3, 3, 3, 3, 3], :); % opensky - smartphone
+colors = lines(5);
+% color_id = 5;
+% color_palette = ones(5,1)*colors(color_id,:);
+color_palette = colors([1, 2, 5, 3, 5], :); %  multi-constellation
 
 
 
-% Define the paths
+
+% % % Define the paths
 obs_folder = '.\data\obs\mp_calculated';
 result_folder = '.\data\result';
 
 % Get list of .mat files in obs_folder
 % files = find_all_files_with_extension(obs_folder, '.mat'); rcv_type =RCV_TYPE_SMARTPHONE;
-% files = {'.\data\obs\mp_calculated\smartphone_urban'}; rcv_type =RCV_TYPE_SMARTPHONE;
-% files = {'.\data\obs\mp_calculated\smartphone_opensky_sync'}; rcv_type =RCV_TYPE_SMARTPHONE;
-% files = {'.\data\obs\mp_calculated\smartphone_opensky'}; rcv_type =RCV_TYPE_SMARTPHONE;
-% files = {'.\data\obs\mp_calculated\smartphone_opensky_carrier'}; rcv_type =RCV_TYPE_SMARTPHONE;
-files = {'.\data\obs\mp_calculated\receiver_opensky'}; rcv_type =RCV_TYPE_RECEIVER;
+% files = {'.\data\obs\mp_calculated\smartphone_urban'}; rcv_type =RCV_TYPE_SMARTPHONE; color_id = 2;
+% files = {'.\data\obs\mp_calculated\smartphone_urban_all'}; rcv_type =RCV_TYPE_SMARTPHONE; color_id = 2;
+% files = {'.\data\obs\mp_calculated\smartphone_opensky_sync_all'}; rcv_type =RCV_TYPE_SMARTPHONE;  color_id = 1;
+files = {'.\data\obs\mp_calculated\smartphone_opensky_all'}; rcv_type =RCV_TYPE_SMARTPHONE; color_id = 1;
+% files = {'.\data\obs\mp_calculated\smartphone_opensky_carrier'}; rcv_type =RCV_TYPE_SMARTPHONE; color_id = 1;
+% files = {'.\data\obs\mp_calculated\receiver_opensky_all'}; rcv_type =RCV_TYPE_RECEIVER; color_id = 5;
 
+
+% 
 % obs_folder = '.\data\obs';
 % result_folder = '.\data\result';
 % files = {'.\data\obs\midterm_receiver'}; rcv_type =RCV_TYPE_RECEIVER;
 % files = {'.\data\obs\midterm_smartphone'}; rcv_type =RCV_TYPE_SMARTPHONE;
+
 % files = {'.\data\obs\smartphone_opensky_carrier'}; rcv_type =RCV_TYPE_SMARTPHONE;
+% files = {'.\data\obs\smartphone_opensky_sync'}; rcv_type =RCV_TYPE_SMARTPHONE;
 % files = {'.\data\obs\smartphone_opensky'}; rcv_type =RCV_TYPE_SMARTPHONE;
-
-
+% files = {'.\data\obs\smartphone_urban'}; rcv_type =RCV_TYPE_SMARTPHONE; color_id = 5;
+% files = {'.\data\obs\receiver_opensky'}; rcv_type =RCV_TYPE_RECEIVER; color_id = 5;
+% 
 % for i = 1:length(files)
 %     file_path = fullfile(files{i});
 %     preprocess_dataset_multipath(file_path, rcv_type);
@@ -63,7 +69,8 @@ for i = 1:length(files)
     [relative_dir, file_name, ~] = fileparts(relative_path);
 
     % 결과 폴더 경로: result/relative_dir/file_name/
-    specific_result_folder = fullfile(result_folder, relative_dir, file_name, 'figures_ppt');
+%     specific_result_folder = fullfile(result_folder, relative_dir, file_name, 'figures_ppt');
+        specific_result_folder = fullfile(result_folder,  file_name);
     
     % Load the dataset object from the .mat file
     dataset = load(file_path).dataset;
@@ -76,8 +83,6 @@ for i = 1:length(files)
     
     start = 10;
     duration = double(dataset.time_GPS(end))-30;
-%     start = 30*60;
-%     duration = 180*60;
 
     %% plot carrier
     snr_folder = fullfile(specific_result_folder, 'carrier');
@@ -85,7 +90,7 @@ for i = 1:length(files)
         mkdir(snr_folder);
     end
 
-    for target_frequency = [1]
+    for target_frequency = [1, 5]
 %         plot_cycle_slip_cmc(dataset, start, duration, snr_folder, target_frequency);
 %         plot_cycle_slip_skyplot(dataset, start, duration, snr_folder, target_frequency);
     end
@@ -98,7 +103,7 @@ for i = 1:length(files)
 
 %     plot_snr_elevation_skyplot(dataset, start, duration, snr_folder);
 %     plot_snr_elevation_graph(dataset, start, duration, snr_folder);
-%     plot_snr_elevation_constellation(dataset, start, duration, snr_folder);
+    plot_snr_elevation_constellation(dataset, start, duration, snr_folder);
 %     plot_snr_time(dataset, start, duration, snr_folder);
     % 
     %% Plot visiblility
@@ -107,7 +112,7 @@ for i = 1:length(files)
     if ~exist(snr_folder, 'dir')
         mkdir(snr_folder);
     end
-% 
+
 %     plot_visible_sat_num(dataset, start, duration, snr_folder);
 %     plot_visible_sat_sum_num(dataset, start, duration, snr_folder);
 %     plot_visible_skyplot(dataset, start, duration, snr_folder);
@@ -120,17 +125,14 @@ for i = 1:length(files)
         mkdir(snr_folder);
     end
 
-    for target_frequency = [1]
-%            sv_exclude = 14;
-%         dataset.mp1(:, sv_exclude) = nan;
-%         dataset.mp5(:, sv_exclude) = nan;
+    for target_frequency = [1, 5]
+% 
 %         plot_multipath_snr(dataset, start, duration, snr_folder, target_frequency);
 %         plot_multipath_elevation(dataset, start, duration, snr_folder, target_frequency);
 %         plot_multipath_time(dataset, start, duration, snr_folder, target_frequency);
 %         plot_multipath_snr_error(dataset, start, duration, snr_folder, target_frequency);
 %         plot_multipath_elevation_error(dataset, start, duration, snr_folder, target_frequency);
-%      
-        plot_multipath_histogram(dataset, start, duration, snr_folder, target_frequency, rcv_type);
+%         plot_multipath_histogram(dataset, start, duration, snr_folder, target_frequency, rcv_type);
     end
 
     %% Doppler
@@ -203,7 +205,7 @@ function preprocess_dataset_multipath(file_path, rcv_type)
     dataset = calculate_multipath_cmc(dataset);
 
     %save
-    savename = fullfile(folder,'mp_calculated', [base, '.mat']);
-%     save(savename, 'dataset');
+    savename = fullfile(folder, 'mp_calculated',[base, '_all.mat']);
+    save(savename, 'dataset');
     fprintf("Preprocessed <%s> for MP\n", savename);
 end

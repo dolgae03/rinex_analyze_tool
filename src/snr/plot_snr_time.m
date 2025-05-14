@@ -6,15 +6,24 @@ function plot_snr_time(dataset, start, duration, save_dir)
     time = dataset.time(start: start+duration);
 
     %% Constellation 별 가시 위성수 생성
-%     target_idx_list = find([1,0,1,0,1] == 1);
-    target_idx_list = find([1,0,0,0,0] == 1);
+    target_idx_list = find([1,0,1,0,1] == 1);
+%     target_idx_list = find([0,0,0,0,1] == 1);
     sat_names = dataset.constellation_name(target_idx_list);
 
     snr_per_each_sat = {};
     
     for i=1:length(target_idx_list)
+
+        constellation = target_idx_list(i);
         range = dataset.constellation_idx(target_idx_list(i)):dataset.constellation_idx(target_idx_list(i)+1)-1;
-        snr_per_each_sat{i} = target_val(start: start+duration, range)';
+        if (constellation == 5)
+            range = dataset.constellation_idx(target_idx_list(i)): 160;
+        end
+        snr_per_each_sat{i} = target_val(start: start+duration, range);
+        mean_snr = mean(target_val(start: start+duration, range), 'all', 'omitnan');
+        std_snr = std(target_val(start: start+duration, range), 0, 'all', 'omitnan');
+        fprintf("%s | mean %2.2f, std %2.2f\n",sat_names{i}, mean_snr, std_snr );
+        
     end
     %% Reference 위치 추정 
     
@@ -32,8 +41,8 @@ function plot_snr_time(dataset, start, duration, save_dir)
         colors = lines();  % 최대 64개 고유 색상 미리 생성 (PRN이 1~64 범위라고 가정)
         % Plot SNR over time for the current satellite
         hold on;
-        for j = 1:size(snr_per_each_sat{i}, 1)
-            plot(time./3600, snr_per_each_sat{i}(j,:), ...
+        for j = 1:size(snr_per_each_sat{i}, 2)
+            plot(time./3600, snr_per_each_sat{i}(:,j), ...
              'LineWidth', 1, ...
              'Color', colors(j,:));
         end
